@@ -1,0 +1,24 @@
+{
+    "name": "django",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+      "build": "npm run build:css && npm run build:js",
+      "build:css": "tailwindcss -i static/css/style.scss -o staticfiles/css/style.css && sass static/css/style.scss staticfiles/css/style.css",
+      "build:js": "esbuild static/js/main.js --bundle --minify --outfile=static/js/bundle.js --target=es2015",
+      "watch:css": "tailwindcss -i static/css/style.scss -o staticfiles/css/style.css --watch",
+      "watch:js": "esbuild static/js/main.js --bundle --outfile=staticfiles/js/bundle.js --watch",
+      "start": "concurrently \"npm run watch:css\" \"npm run watch:js\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "autoprefixer": "^10.4.14",
+      "concurrently": "^8.0.1",
+      "esbuild": "^0.17.19",
+      "postcss": "^8.4.23",
+      "sass": "^1.62.1",
+      "tailwindcss": "^3.3.2"
+    }
+  }

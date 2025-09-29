@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Django Shop - Trang quản lý</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="{% static 'cassets/images/logo.png' %}" style="width: 20px; height: 20px;" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'cassets/css/perfect-scrollbar.min.css' %}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'cassets/css/style.css' %}" />
+    <link defer rel="stylesheet" type="text/css" media="screen" href="{% static 'cassets/css/animate.css' %}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'cassets/css/nice-select2.css' %}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'cassets/css/customize.css' %}" />
+    <script src="{% static 'cassets/js/perfect-scrollbar.min.js' %}"></script>
+    <script defer src="{% static 'cassets/js/popper.min.js' %}"></script>
+    <script defer src="{% static 'cassets/js/tippy-bundle.umd.min.js' %}"></script>
+    <script defer src="{% static 'cassets/js/sweetalert.min.js' %}"></script>
+    <script defer src="{% static 'cassets/js/plugins/inputValidator.js' %}"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.1.0/classic/ckeditor.js"></script>
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.1.1/ckeditor5.css" />
+    <script src="{% static 'js/ckeditor_config.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    {% block content %}{% endblock content %}
+</body>
+</html>

@@ -1,0 +1,74 @@
+// {
+//     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+//     "python.analysis.typeCheckingMode": "basic",
+//     "files.associations": {
+//         "*.html": "html",
+//         "*.js": "javascript",
+//         "*.css": "css",
+//         "*.py": "python",
+//         "*.pyi": "python",
+//         "*.ipynb": "jupyter-notebook",
+//         "*.djt": "django-txt",
+//         "*.djhtml": "django-html"
+//     },
+//     "emmet.includeLanguages": {
+//         "django-html": "html"
+//     },
+//     "editor.formatOnSave": true,
+//     "editor.formatOnPaste": true,
+
+
+//     "editor.suggestSelection": "first",
+//     "python.analysis.completeFunctionParens": true,
+//     "python.analysis.autoImportCompletions": true,
+//     "editor.snippetSuggestions": "top",
+//     "editor.tabCompletion": "on",
+//     "editor.suggest.showMethods": true,
+//     "editor.suggest.showFunctions": true,
+//     "editor.suggest.showVariables": true,
+//     "editor.suggest.showClasses": true,
+//     "editor.suggest.showConstants": true,
+//     "editor.suggest.showProperties": true,
+//     "editor.suggest.showKeywords": true,
+
+//     "python.analysis.diagnosticMode": "workspace",
+//     "python.analysis.autoSearchPaths": true,
+//     "python.analysis.extraPaths": [],
+//     "python.analysis.diagnosticSeverityOverrides": {
+//         "reportGeneralTypeIssues": "warning",
+//         "reportPropertyTypeMismatch": "warning"
+//     },
+//     // "python.testing.pytestEnabled": true,
+//     // "python.testing.unittestEnabled": false,
+//     // "python.testing.nosetestsEnabled": false,
+//     "python.testing.pytestArgs": [
+//         "tests"
+//     ],
+//     "git.enableSmartCommit": true,
+//     "git.autofetch": true,
+//     "git.confirmSync": false,
+//     // "editor.renderWhitespace": "all",
+//     "editor.wordWrap": "off",
+//     "editor.bracketPairColorization.enabled": true,
+//     "editor.guides.bracketPairs": true,
+//     "editor.minimap.enabled": false,
+//     "editor.lineNumbers": "on",
+//     "editor.fontLigatures": true,
+//     "editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace",
+//     "files.trimTrailingWhitespace": true,
+//     "files.insertFinalNewline": true,
+//     "files.trimFinalNewlines": true,
+//     "terminal.integrated.defaultProfile.windows": "Command Prompt",
+//     "terminal.integrated.defaultProfile.linux": "bash",
+//     "terminal.integrated.defaultProfile.osx": "zsh",
+//     "[django-html]": {
+//         "editor.formatOnSave": true,
+//         "editor.defaultFormatter": "batisteo.vscode-django"
+//     },
+//     "files.exclude": {
+//         "**/.git": false,
+//         "**/*.pyc": true,
+//         "**/__pycache__": true,
+//         "**/.DS_Store": true
+//     }
+// }

@@ -1,0 +1,82 @@
+{% extends 'admin/layouts/head.html' %}
+{% block content %}
+{% load static %}
+<div style="width: 100%; height: 100vh; overflow: hidden; background: url({% static 'cassets/images/auth/bg-gradient.png' %}); background-size: cover;">
+    <div style="display: flex; flex-direction: column; justify-content: center; padding: 1.5rem 1.5rem; max-width: 100%;">
+        <div style="margin-top: 2.5rem; margin-left: auto; margin-right: auto; width: 100%; max-width: 24rem;">
+            <div style="width: 100%; max-width: 24rem; padding: 1rem; background-color: white; border: 1px solid rgb(229, 231, 235); border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); padding: 1.5rem;">
+              <form style="display: flex; flex-direction: column; gap: 1.5rem;" action="{% url 'login_cms' %}" method="POST">
+                {% csrf_token %}
+                <div style="margin-bottom: 2.5rem;">
+                    <h1 style="font-size: 1.875rem; font-weight: 800; text-transform: uppercase; line-height: 1.25; color: #02594e; font-size: 2.25rem;">Sign in</h1>
+                    <p style="font-size: 1rem; font-weight: 700; line-height: 1.5; color: var(--text-dark-color);">Enter your user name and password to login</p>
+                </div>
+                <div>
+                    <label for="username" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: rgb(17, 24, 39);">User Name</label>
+                    <input type="text" name="username" id="username" placeholder="admin@gmail.com" 
+                        style="background-color: rgb(249, 250, 251); 
+                               border: 1px solid rgb(209, 213, 219); 
+                               color: rgb(17, 24, 39); 
+                               font-size: 0.875rem; 
+                               border-radius: 0.5rem; 
+                               border-width: 1px; 
+                               display: block; 
+                               width: 100%; 
+                               padding: 0.625rem;" 
+                        required />
+                </div>
+                <div>
+                    <label for="password" style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: rgb(17, 24, 39);">Password</label>
+                    <input type="password" name="password" id="password" placeholder="••••••••" 
+                        style="background-color: rgb(249, 250, 251); 
+                               border: 1px solid rgb(209, 213, 219); 
+                               color: rgb(17, 24, 39); 
+                               font-size: 0.875rem; 
+                               border-radius: 0.5rem; 
+                               border-width: 1px; 
+                               display: block; 
+                               width: 100%; 
+                               padding: 0.625rem;" 
+                        required />
+                </div>
+              
+              <button type="submit" style="width: 100%;
+                background-color: rgb(29 78 216);
+                color: white;
+                font-weight: 500;
+                border-radius: 0.5rem;
+                font-size: 0.875rem;
+                padding: 0.625rem 1.25rem;
+                text-align: center;
+                transition: background-color 0.3s ease;">Login to your account</button>
+              <!-- <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
+                  Not registered? <a href="#" class="text-blue-700 hover:underline dark:text-blue-500">Create account</a>
+              </div> -->
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% load static %}
+{% if messages %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for message in messages %}
+                Swal.fire({
+                    title: "{{ message.tags|upper }}",
+                    text: "{{ message }}",
+                    icon: "{{ message.tags }}",
+                    showConfirmButton: false,
+                    timer: 5000
+                }).then(() => {
+                    {% if message.tags == 'success' %}
+                        window.location.href = "{% url 'index' %}";
+                    {% endif %}
+                });
+            {% endfor %}
+        });
+    </script>
+{% endif %}
+{% endblock content %}

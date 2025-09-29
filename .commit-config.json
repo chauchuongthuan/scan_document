@@ -1,0 +1,26 @@
+{
+  "types": [
+    "feat",
+    "fix",
+    "docs",
+    "style",
+    "refactor",
+    "test",
+    "chore",
+    "perf",
+    "ci",
+    "revert"
+  ],
+  "scopes": [
+    "api",
+    "ui",
+    "db",
+    "auth",
+    "core",
+    "config",
+    "deps",
+    "tests",
+    "docs"
+  ],
+  "enforce_helper": true
+}

@@ -1,0 +1,332 @@
+{% extends 'admin/layouts/admin.html' %}
+
+{% block content %}
+
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+        <li class="before:content-['/'] before:px-1.5"><a href="{% url 'document-list' %}">Hợp đồng</a></li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;" class="text-black dark:text-white-light hover:text-black/70 dark:hover:text-white-light/70">Tạo mới</a></li>
+    </ol>
+    <div class="panel">
+        <h5 class="mb-5 text-lg font-semibold dark:text-white-light">Tạo mới hợp đồng</h5>
+        <div x-data="documentForm">
+            <form method="post" action="{% url 'document-create' %}" class="space-y-5" @submit.prevent="submitForm()" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="w-full space-y-6">
+                        <!-- Comco ref, Buyer ref, Contract date, Price -->
+                        <div class="grid grid-cols-4 gap-4">
+                            <div :class="[isSubmitted ? (form.comco_ref ? 'has-success' : 'has-error') : '']">
+                                <label for="comco_ref">Comco ref</label>
+                                <input id="comco_ref" type="text" name="comco_ref" class="form-input" placeholder="Enter Comco ref" x-model="form.comco_ref" />
+                                
+                                <template x-if="isSubmitted && !form.comco_ref">
+                                    <p class="text-danger mt-1">Please enter Comco ref</p>
+                                </template>
+                            </div>
+
+                            <div :class="[isSubmitted ? (form.buyer_ref ? 'has-success' : 'has-error') : '']">
+                                <label for="buyer_ref">Buyer ref</label>
+                                <input id="buyer_ref" type="text" name="buyer_ref" class="form-input" placeholder="Enter Buyer ref" x-model="form.buyer_ref" />
+                                
+                                <template x-if="isSubmitted && !form.buyer_ref">
+                                    <p class="text-danger mt-1">Please enter Buyer ref</p>
+                                </template>
+                            </div>
+
+                            <div :class="[isSubmitted ? (form.contract_date ? 'has-success' : 'has-error') : '']">
+                                <label for="contract_date">Contract date</label>
+                                <input id="contract_date" type="date" name="contract_date" class="form-input" placeholder="Enter Contract date" x-model="form.contract_date | date('Y-m-d')" />
+                                
+                                <template x-if="isSubmitted && !form.contract_date">
+                                    <p class="text-danger mt-1">Please enter Contract date</p>
+                                </template>
+                            </div>
+
+                            <div :class="[isSubmitted ? (form.price ? 'has-success' : 'has-error') : '']">
+                                <label for="price">Price</label>
+                                <input id="price" type="text" name="price" class="form-input" placeholder="Enter Price" x-model="form.price" />
+                                
+                                <template x-if="isSubmitted && !form.price">
+                                    <p class="text-danger mt-1">Please enter Price</p>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- DDS & GEO, DOCS, Shippers, Buyers -->
+                        <div class="grid grid-cols-4 gap-4">
+                            <div>
+                                <label for="dds_and_geo">DDS & GEO</label>
+                                <input id="dds_and_geo" type="text" name="dds_and_geo" class="form-input" placeholder="Enter DDS & GEO" x-model="form.dds_and_geo" />
+                            </div>
+                            <div :class="[isSubmitted ? (form.docs ? 'has-success' : 'has-error') : '']">
+                                <label for="docs">Docs</label>
+                                <input id="docs" type="text" name="docs" class="form-input" placeholder="Enter Docs" x-model="form.docs" />
+                                <template x-if="isSubmitted && !form.docs">
+                                    <p class="text-danger mt-1">Please enter Docs</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.shippers ? 'has-success' : 'has-error') : '']">
+                                <label for="shippers">Shippers</label>
+                                <input id="shippers" type="text" name="shippers" class="form-input" placeholder="Enter Shippers" x-model="form.shippers" />
+                                <template x-if="isSubmitted && !form.shippers">
+                                    <p class="text-danger mt-1">Please enter Shippers</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.buyers ? 'has-success' : 'has-error') : '']">
+                                <label for="buyers">Buyers</label>
+                                <input id="buyers" type="text" name="buyers" class="form-input" placeholder="Enter Buyers" x-model="form.buyers" />
+                                <template x-if="isSubmitted && !form.buyers">
+                                    <p class="text-danger mt-1">Please enter Buyers</p>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Quality, Quantity, Conts no, Packing -->
+                        <div class="grid grid-cols-4 gap-4">
+                            <div :class="[isSubmitted ? (form.quality ? 'has-success' : 'has-error') : '']">
+                                <label for="quality">Quality</label>
+                                <input id="quality" type="text" name="quality" class="form-input" placeholder="Enter Quality" x-model="form.quality" />
+                                <template x-if="isSubmitted && !form.quality">
+                                    <p class="text-danger mt-1">Please enter Quality</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.quantity ? 'has-success' : 'has-error') : '']">
+                                <label for="quantity">Quantity</label>
+                                <input id="quantity" type="text" name="quantity" class="form-input" placeholder="Enter Quantity" x-model="form.quantity" />
+                                <template x-if="isSubmitted && !form.quantity">
+                                    <p class="text-danger mt-1">Please enter Quantity</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.conts_no ? 'has-success' : 'has-error') : '']">
+                                <label for="conts_no">Conts no</label>
+                                <input id="conts_no" type="text" name="conts_no" class="form-input" placeholder="Enter Conts no" x-model="form.conts_no" />
+                                <template x-if="isSubmitted && !form.conts_no">
+                                    <p class="text-danger mt-1">Please enter Conts no</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.packing ? 'has-success' : 'has-error') : '']">
+                                <label for="packing">Packing</label>
+                                <input id="packing" type="text" name="packing" class="form-input" placeholder="Enter Packing" x-model="form.packing" />
+                                <template x-if="isSubmitted && !form.packing">
+                                    <p class="text-danger mt-1">Please enter Packing</p>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Shipment period, Sample, Result, Stuffing date -->
+                        <div class="grid grid-cols-4 gap-4">
+                            <div :class="[isSubmitted ? (form.shipment_period ? 'has-success' : 'has-error') : '']">
+                                <label for="shipment_period">Shipment period</label>
+                                <input id="shipment_period" type="text" name="shipment_period" class="form-input" placeholder="Enter Shipment period" x-model="form.shipment_period" />
+                                <template x-if="isSubmitted && !form.shipment_period">
+                                    <p class="text-danger mt-1">Please enter Shipment period</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.sample ? 'has-success' : 'has-error') : '']">
+                                <label for="sample">Sample</label>
+                                <input id="sample" type="text" name="sample" class="form-input" placeholder="Enter Sample" x-model="form.sample" />
+                                <template x-if="isSubmitted && !form.sample">
+                                    <p class="text-danger mt-1">Please enter Sample</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.result ? 'has-success' : 'has-error') : '']">
+                                <label for="result">Result</label>
+                                <input id="result" type="text" name="result" class="form-input" placeholder="Enter Result" x-model="form.result" />
+                                <template x-if="isSubmitted && !form.result">
+                                    <p class="text-danger mt-1">Please enter Result</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.stuffing_date ? 'has-success' : 'has-error') : '']">
+                                <label for="stuffing_date">Stuffing date</label>
+                                <input id="stuffing_date" type="date" name="stuffing_date" class="form-input" placeholder="Enter Stuffing date" x-model="form.stuffing_date" />
+                                <template x-if="isSubmitted && !form.stuffing_date">
+                                    <p class="text-danger mt-1">Please enter Stuffing date</p>
+                                </template>
+                            </div>
+                            
+                        </div>
+                        
+                        <!-- Carriers, Booking no, ETD, ETA -->
+                        <div class="grid grid-cols-4 gap-4">
+                            <div :class="[isSubmitted ? (form.carriers ? 'has-success' : 'has-error') : '']">
+                                <label for="carriers">Carriers</label>
+                                <input id="carriers" type="text" name="carriers" class="form-input" placeholder="Enter Carries" x-model="form.carriers" />
+                                <template x-if="isSubmitted && !form.carriers">
+                                    <p class="text-danger mt-1">Please enter Carries</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.booking_no ? 'has-success' : 'has-error') : '']">
+                                <label for="booking_no">Booking no</label>
+                                <input id="booking_no" type="text" name="booking_no" class="form-input" placeholder="Enter Booking no" x-model="form.booking_no" />
+                                <template x-if="isSubmitted && !form.booking_no">
+                                    <p class="text-danger mt-1">Please enter Booking no</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.etd ? 'has-success' : 'has-error') : '']">
+                                <label for="etd">ETD</label>
+                                <input id="etd" type="date" name="etd" class="form-input" placeholder="Enter ETD" x-model="form.etd" />
+                                <template x-if="isSubmitted && !form.etd">
+                                    <p class="text-danger mt-1">Please enter ETD</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.eta ? 'has-success' : 'has-error') : '']">
+                                <label for="eta">ETA</label>
+                                <input id="eta" type="text" name="eta" class="form-input" placeholder="Enter ETA" x-model="form.eta" />
+                                <template x-if="isSubmitted && !form.eta">
+                                    <p class="text-danger mt-1">Please enter ETA</p>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- Destination, Inspectors, Warehouse, Status -->
+                        <div class="grid grid-cols-4 gap-4">
+                            <div :class="[isSubmitted ? (form.destination ? 'has-success' : 'has-error') : '']">
+                                <label for="destination">Destination</label>
+                                <input id="destination" type="text" name="destination" class="form-input" placeholder="Enter Destination" x-model="form.destination" />
+                                <template x-if="isSubmitted && !form.destination">
+                                    <p class="text-danger mt-1">Please enter Destination</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.inspectors ? 'has-success' : 'has-error') : '']">
+                                <label for="inspectors">Inspectors</label>
+                                <input id="inspectors" type="text" name="inspectors" class="form-input" placeholder="Enter Inspectors" x-model="form.inspectors" />
+                                <template x-if="isSubmitted && !form.inspectors">
+                                    <p class="text-danger mt-1">Please enter Inspectors</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.warehouse ? 'has-success' : 'has-error') : '']">
+                                <label for="warehouse">Warehouse</label>
+                                <input id="warehouse" type="text" name="warehouse" class="form-input" placeholder="Enter Warehouse" x-model="form.warehouse" />
+                                <template x-if="isSubmitted && !form.warehouse">
+                                    <p class="text-danger mt-1">Please enter Warehouse</p>
+                                </template>
+                            </div>
+                            <div :class="[isSubmitted ? (form.status ? 'has-success' : 'has-error') : '']">
+                                <label for="status">Status</label>
+                                <input id="status" type="text" name="status" class="form-input" placeholder="Enter Status" x-model="form.status" />
+                                <template x-if="isSubmitted && !form.status">
+                                    <p class="text-danger mt-1">Please enter Status</p>
+                                </template>
+                            </div>
+                            
+                        </div>
+                        <!-- Weight claim, Remark -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="weight_claim">Weight claim</label>
+                                <input id="weight_claim" type="text" name="weight_claim" class="form-input" placeholder="Enter Weight claim" x-model="form.weight_claim" />
+                            </div>
+                            <div>
+                                <label for="remark">Remark</label>
+                                <input id="remark" type="text" name="remark" class="form-input" placeholder="Enter Remark" x-model="form.remark" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="btn btn-primary">Tạo mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("documentForm", () => ({
+            form: {
+                comco_ref: '',
+                buyer_ref: '',
+                contract_date: '',
+                price: '',
+                dds_and_geo: '',
+                docs: '',
+                shippers: '',
+                buyers: '',
+                shipment_period: '',
+                quality: '',
+                quantity: '',
+                conts_no: '',
+                packing: '',
+                sample: '',
+                stuffing_date: '',
+                carriers: '',
+                booking_no: '',
+                etd: '',
+                eta: '',
+                destination: '',
+                inspectors: '',
+                warehouse: '',
+                status: '',
+                weight_claim: '',
+                remark: '',
+            },
+            isSubmitted: false,
+
+            submitForm() {
+                this.isSubmitted = true;
+                if (this.form.comco_ref && this.form.buyer_ref && this.form.contract_date && this.form.price
+                    && this.form.docs && this.form.shippers && this.form.buyers && this.form.shipment_period
+                    && this.form.quality && this.form.quantity && this.form.conts_no && this.form.packing && this.form.sample
+                    && this.form.stuffing_date && this.form.carriers && this.form.booking_no && this.form.etd && this.form.eta
+                    && this.form.destination && this.form.inspectors && this.form.warehouse && this.form.status
+                ) {
+                    const formData = new FormData(this.$el);
+                    fetch(this.$el.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.showMessage(data.message, data.status);
+                        if (data.status === 'success' && data.redirect) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect;
+                            }, 1000);
+                        }
+                    })
+                    .catch(error => {
+                        this.showMessage('An error occurred while processing your request.', 'error');
+                    });
+                }
+            },
+
+            showMessage(msg = '', type = 'success') {
+                const toast = window.Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 5000
+                });
+                toast.fire({
+                    icon: type,
+                    title: msg,
+                    padding: '2em'
+                });
+            },
+        }));
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Khởi tạo NiceSelect cho các dropdown
+        const selectElements = document.querySelectorAll('.nice-select');
+        selectElements.forEach(select => {
+            NiceSelect.bind(select, {
+                searchable: true
+            });
+        });
+    });
+</script>
+{% endblock %}

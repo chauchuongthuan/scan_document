@@ -1,0 +1,444 @@
+{% extends 'admin/layouts/admin.html' %} {% load static %} {% block content %}
+
+<div class="p-4">
+  <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+    <li>
+      <a
+        href="javascript:;"
+        class="hover:text-gray-500/70 dark:hover:text-white-dark/70"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 shrink-0"
+        >
+          <path
+            opacity="0.5"
+            d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z"
+            stroke="currentColor"
+            stroke-width="1.5"
+          ></path>
+          <path
+            d="M12 15L12 18"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </a>
+    </li>
+    <li class="before:content-['/'] before:px-1.5">
+      <a href="{% url 'document-list' %}">Hợp đồng</a>
+    </li>
+    <li class="before:content-['/'] before:px-1.5">
+      <a
+        href="javascript:;"
+        class="text-black dark:text-white-light hover:text-black/70 dark:hover:text-white-light/70"
+        >Chỉnh sửa</a
+      >
+    </li>
+  </ol>
+  <div class="panel">
+    <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
+      Chỉnh sửa hợp đồng
+    </h5>
+    <div>
+      <form
+        id="documentForm"
+        method="post"
+        enctype="multipart/form-data"
+        action="{% url 'document-update' document.id %}"
+        class="space-y-5"
+      >
+        {% csrf_token %}
+        <div class="flex flex-col md:flex-row gap-8">
+          <div class="w-full space-y-6">
+            <!-- Comco ref, Buyer ref, Contract date, Price -->
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="mt-2" for="comco_ref">Comco ref</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="comco_ref"
+                        type="text"
+                        name="comco_ref"
+                        class="form-input"
+                        value="{{ document.comco_ref }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="buyer_ref">Buyer ref</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="buyer_ref"
+                        type="text"
+                        name="buyer_ref"
+                        class="form-input"
+                        value="{{ document.buyer_ref }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="contract_date">Contract date</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="contract_date"
+                        type="date"
+                        name="contract_date"
+                        class="form-input"
+                        value="{{ document.contract_date | date:'Y-m-d' }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="price">Price</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="price"
+                        type="text"
+                        name="price"
+                        class="form-input"
+                        value="{{ document.price }}"
+                    />
+                </div>
+              </div>
+            </div>
+            <!-- DDS & GEO, DOCS, Shippers, Buyers -->
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="mt-2" for="dds_and_geo">DDS & GEO</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="dds_and_geo"
+                        type="text"
+                        name="dds_and_geo"
+                        class="form-input"
+                        value="{{ document.dds_and_geo }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="docs">Docs</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="docs"
+                        type="text"
+                        name="docs"
+                        class="form-input"
+                        value="{{ document.docs }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="shippers">Shippers</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="shippers"
+                        type="text"
+                        name="shippers"
+                        class="form-input"
+                        value="{{ document.shippers }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="buyers">Buyers</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="buyers"
+                        type="text"
+                        name="buyers"
+                        class="form-input"
+                        value="{{ document.buyers }}"
+                    />
+                </div>
+              </div>
+            </div>
+            <!-- Quality, Quantity, Conts no, Packing -->
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="mt-2" for="quality">Quality</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="quality"
+                        type="text"
+                        name="quality"
+                        class="form-input"
+                        value="{{ document.quality }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="quantity">Quantity</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="quantity"
+                        type="text"
+                        name="quantity"
+                        class="form-input"
+                        value="{{ document.quantity }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="conts_no">Conts no</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="conts_no"
+                        type="text"
+                        name="conts_no"
+                        class="form-input"
+                        value="{{ document.conts_no }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="packing">Packing</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="packing"
+                        type="text"
+                        name="packing"
+                        class="form-input"
+                        value="{{ document.packing }}"
+                    />
+                </div>
+              </div>
+            </div>
+            <!-- Shipment period, Sample, Result, Stuffing date -->
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="mt-2" for="shipment_period">Shipment period</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="shipment_period"
+                        type="text"
+                        name="shipment_period"
+                        class="form-input"
+                        value="{{ document.shipment_period }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="sample">Sample</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="sample"
+                        type="text"
+                        name="sample"
+                        class="form-input"
+                        value="{{ document.sample }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="result">Result</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="result"
+                        type="text"
+                        name="result"
+                        class="form-input"
+                        value="{{ document.result }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="stuffing_date">Stuffing date</label>
+                <div class="flex items-center gap-2">
+                      <input
+                      id="stuffing_date"
+                      type="date"
+                      name="stuffing_date"
+                      class="form-input"
+                      value="{{ document.stuffing_date | date:'Y-m-d' }}"
+                  />
+                </div>
+              </div>
+            </div>
+            <!-- Carriers, Booking no, ETD, ETA -->
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="mt-2" for="carriers">Carriers</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="carriers"
+                        type="text"
+                        name="carriers"
+                        class="form-input"
+                        value="{{ document.carriers }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="booking_no">Booking no</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="booking_no"
+                        type="text"
+                        name="booking_no"
+                        class="form-input"
+                        value="{{ document.booking_no }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="etd">ETD</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="etd"
+                        type="date"
+                        name="etd"
+                        class="form-input"
+                        value="{{ document.etd | date:'Y-m-d' }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="eta">ETA</label>
+                <div class="flex items-center gap-2">
+                      <input
+                      id="eta"
+                      type="text"
+                      name="eta"
+                      class="form-input"
+                      value="{{ document.eta }}"
+                  />
+                </div>
+              </div>
+            </div>
+            <!-- Destination, Inspectors, Warehouse, Status -->
+            <div class="grid grid-cols-4 gap-4">
+              <div>
+                <label class="mt-2" for="destination">Destination</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="destination"
+                        type="text"
+                        name="destination"
+                        class="form-input"
+                        value="{{ document.destination }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="inspectors">Inspectors</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="inspectors"
+                        type="text"
+                        name="inspectors"
+                        class="form-input"
+                        value="{{ document.inspectors }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="warehouse">Warehouse</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="warehouse"
+                        type="text"
+                        name="warehouse"
+                        class="form-input"
+                        value="{{ document.warehouse }}"
+                    />
+                </div>
+              </div>
+              <div>
+                <label class="mt-2" for="status">Status</label>
+                <div class="flex items-center gap-2">
+                      <input
+                      id="status"
+                      type="text"
+                      name="status"
+                      class="form-input"
+                      value="{{ document.status }}"
+                  />
+                </div>
+              </div>
+            </div>
+            <!-- Weight claim, Remark -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="mt-2" for="weight_claim">Weight claim</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="weight_claim"
+                        type="text"
+                        name="weight_claim"
+                        class="form-input"
+                        value="{{ document.weight_claim }}"
+                    />
+                </div>
+              </div>
+              <div :class="[isSubmitted ? (form.status ? 'has-success' : 'has-error') : '']">
+                <label class="mt-2" for="remark">Remark</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="remark"
+                        type="text"
+                        name="remark"
+                        class="form-input"
+                        value="{{ document.remark }}"
+                    />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button type="submit" onclick="submitForm(event)" class="btn btn-primary">Chỉnh sửa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script defer src="{% static 'cassets/js/sweetalert.min.js' %}"></script>
+<script>
+  function submitForm(event) {
+    const documentForm = document.getElementById('documentForm');
+    event.preventDefault();
+    const formData = new FormData(documentForm);
+    
+    fetch(documentForm.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': '{{ csrf_token }}'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      showMessage(data.message, data.status);
+      if (data.status === 'success' && data.redirect) {
+        setTimeout(() => {
+          window.location.href = data.redirect;
+        }, 1000);
+      }
+    })
+    .catch(error => {
+      showMessage('An error occurred while processing your request.', 'error');
+    });
+  }
+  function showMessage(msg = '', type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+</script>
+{% endblock %}

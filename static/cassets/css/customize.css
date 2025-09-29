@@ -1,0 +1,16 @@
+.error-message {
+  color: red;
+  display: none;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+
+input.error {
+  border-color: red;
+}
+.w-70-c {
+    width: 70%;
+}
+.w-30-c {
+    width: 30%;
+}
