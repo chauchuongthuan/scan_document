@@ -159,7 +159,6 @@ class DocumentListView:
                 for index, row in df.iterrows():
                     try:
                         # Convert date fields to proper format
-                        print("pd.notna(row['contract_date'])", pd.notna(row['contract_date']))
                         contract_date = pd.to_datetime(row['contract_date']).date() if pd.notna(row['contract_date']) else None
                         stuffing_date = pd.to_datetime(row['stuffing_date']).date() if pd.notna(row['stuffing_date']) else None
                         etd = pd.to_datetime(row['etd']).date() if pd.notna(row['etd']) else None
@@ -214,7 +213,6 @@ class DocumentListView:
                     'status': 'success',
                     'message': message,
                     'imported_count': imported_count,
-                    'error_count': error_count
                 })
 
             except Exception as e:

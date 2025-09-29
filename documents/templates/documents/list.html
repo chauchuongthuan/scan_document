@@ -22,7 +22,7 @@
             <form method="GET" action="{% url 'document-list' %}" class="flex items-center w-10/12 mr-2">
                 <input type="text" 
                        name="name_search" 
-                       placeholder="Tiêu đề..." 
+                       placeholder="Comco or Buyer ref" 
                        class="form-input w-2/12 mr-2" 
                        value="{{ request.GET.name_search }}">
                 <button type="submit" class="btn btn-primary ml-2 w-2/12" style="justify-items: flex-end;">Tìm kiếm</button>
@@ -191,6 +191,7 @@
 }
     function hideImportModal() {
         document.getElementById('importModal').classList.add('hidden');
+        document.getElementById('excelFileInput').value = '';
     }
 
     document.getElementById('importForm').addEventListener('submit', async function(e) {
