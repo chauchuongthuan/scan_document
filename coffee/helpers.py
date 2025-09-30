@@ -25,14 +25,6 @@ def extract_fields_from_pdf(pdf_file):
     extracted_data = {}
     text = ""
     
-    # Xử lý PDF bằng pdfplumber (unchanged code for text extraction)
-    import pdfplumber
-    import io
-    from PIL import Image
-    import pytesseract
-    import re
-    # Assuming convert_date_format and other necessary imports are available
-    
     with pdfplumber.open(pdf_file) as pdf:
         for page in pdf.pages:
             # Thử trích xuất văn bản trực tiếp
@@ -75,13 +67,9 @@ def extract_fields_from_pdf(pdf_file):
             extracted_data[field] = None
     
     # Tách contract_no và date (unchanged code for contract processing)
-    # The original code used 'CONTRACT_NO' but the initial extraction used 'CONTRACT NO' 
-    # and the patterns dictionary uses 'CONTRACT NO'. 
-    # I'll correct the following block to use 'CONTRACT NO'.
     if extracted_data.get('CONTRACT NO'):
         contract_field = extracted_data['CONTRACT NO']
         
-        # Tách contract_no và date từ chuỗi ": C21257-04 DATE: APR 10, 2025"
         contract_parts = re.split(r'\s*DATE:\s*', contract_field, flags=re.IGNORECASE)
         
         if len(contract_parts) >= 2:
@@ -94,11 +82,8 @@ def extract_fields_from_pdf(pdf_file):
             date_str = contract_parts[1].strip()
             
             extracted_data['CONTRACT NO'] = contract_no
-            # NOTE: 'CONTRACT DATE' is a new key, which is fine here because it's after iteration
-            # BUT for consistency with the field mapping, let's use the field mapping key
-            extracted_data['CONTRACT DATE'] = convert_date_format(date_str) # Assuming convert_date_format is defined
+            extracted_data['CONTRACT DATE'] = convert_date_format(date_str)
         else:
-            # Nếu không tách được, giữ nguyên và để contract_date là None
             extracted_data['CONTRACT DATE'] = None
             
     final_data = {}
@@ -110,7 +95,6 @@ def extract_fields_from_pdf(pdf_file):
             
     return final_data
 
-# The supporting function is correct
 def convert_field_name(field_name):
     field_map = {
         'THE BUYER': 'buyers',

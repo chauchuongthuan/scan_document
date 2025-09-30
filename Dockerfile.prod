@@ -57,7 +57,7 @@ ENV DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
 # Chạy các lệnh khác không cần database
 #RUN python src/manage.py vendor_pull
 RUN npm install
-RUN npm run build
+# RUN npm run build
 RUN python manage.py collectstatic --noinput
 
 # Đặt tên dự án Django mặc định
