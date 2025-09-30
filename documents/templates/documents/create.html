@@ -17,6 +17,26 @@
     </ol>
     <div class="panel">
         <h5 class="mb-5 text-lg font-semibold dark:text-white-light">Tạo mới hợp đồng</h5>
+        <button class="btn btn-primary w-1/12" onclick="showScanModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Scan
+        </button>
+        <!-- Modal Scan -->
+        <div id="scanModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg w-96">
+                <h2 class="text-lg font-bold mb-4">Scan PDF</h2>
+                <form id="scanForm">
+                    <input type="file" name="pdf_file" id="pdfFileInput" accept=".pdf" required class="mb-4">
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="hideScanModal()" class="btn btn-sm btn-outline-danger">Hủy</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         <div x-data="documentForm">
             <form method="post" action="{% url 'document-create' %}" class="space-y-5" @submit.prevent="submitForm()" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -108,14 +128,21 @@
                             </div>
                             <div :class="[isSubmitted ? (form.conts_no ? 'has-success' : 'has-error') : '']">
                                 <label for="conts_no">Conts no</label>
-                                <input id="conts_no" type="text" name="conts_no" class="form-input" placeholder="Enter Conts no" x-model="form.conts_no" />
+                                <input id="conts_no" type="number" name="conts_no" class="form-input" placeholder="Enter Conts no" x-model="form.conts_no" />
                                 <template x-if="isSubmitted && !form.conts_no">
                                     <p class="text-danger mt-1">Please enter Conts no</p>
                                 </template>
                             </div>
                             <div :class="[isSubmitted ? (form.packing ? 'has-success' : 'has-error') : '']">
                                 <label for="packing">Packing</label>
-                                <input id="packing" type="text" name="packing" class="form-input" placeholder="Enter Packing" x-model="form.packing" />
+                                <!-- <input id="packing" type="text" name="packing" class="form-input" placeholder="Enter Packing" x-model="form.packing" /> -->
+                                 <select id="packing" name="packing" class="form-input" x-model="form.packing">
+                                    <option value="">--- Select Packing ---</option>
+                                    <option value="Bulk">Bulk</option>
+                                    <option value="Bag">Bag</option>
+                                    <option value="Jumbo">Jumbo</option>
+                                    <option value="PP">PP</option>
+                                </select>
                                 <template x-if="isSubmitted && !form.packing">
                                     <p class="text-danger mt-1">Please enter Packing</p>
                                 </template>
@@ -328,5 +355,100 @@
             });
         });
     });
+
+    function showScanModal() {
+        document.getElementById('scanModal').classList.remove('hidden');
+    }
+    function hideScanModal() {
+        document.getElementById('scanModal').classList.add('hidden');
+        document.getElementById('pdfFileInput').value = '';
+    }
+
+    document.getElementById('scanForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch("{% url 'document-scan-pdf' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.status === "success") {
+                showMessageScan(result.message, result.status);
+                fillForm(result.data);
+                hideScanModal();
+                
+            }
+            else {
+                showMessageScan(result.message, result.status);
+                hideScanModal();
+            }
+        } catch (error) {
+            showMessageScan("Lỗi khi upload file: " + error, "error");
+        }
+    });
+    function showMessageScan(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function fillForm(data) {
+        // List of form fields and their corresponding keys in the 'data' object
+        const fields = [
+            'comco_ref',
+            'buyer_ref',
+            'contract_date',
+            'price',
+            'dds_and_geo',
+            'docs',
+            'shippers',
+            'buyers',
+            'quality',
+            'quantity',
+            'conts_no',
+            'packing',
+            'shipment_period',
+            'sample',
+            'result',
+            'stuffing_date',
+            'carriers',
+            'booking_no',
+            'etd',
+            'eta',
+            'destination',
+            'inspectors',
+            'warehouse',
+            'status',
+            'weight_claim',
+            'remark',
+        ];
+
+        fields.forEach(key => {
+            // Check if the key exists in the data object AND its value is not null or undefined.
+            // The check (data[key] !== null) also handles undefined, but it's clearer to check for both.
+            if (data && data[key] !== undefined && data[key] !== null) {
+                // Only update the form field if the received data is valid
+                const formElement = document.getElementById(key);
+                if (formElement) {
+                    formElement.value = data[key];
+                }
+            }
+        });
+    }
 </script>
 {% endblock %}

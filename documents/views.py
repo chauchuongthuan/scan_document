@@ -16,6 +16,7 @@ from django.core.files.storage import default_storage
 from django.contrib.auth.decorators import login_required
 import pandas as pd
 import json
+from coffee.helpers import extract_fields_from_pdf
 # Document Views
 class DocumentListView:
     @login_required(login_url="login_cms")
@@ -224,6 +225,32 @@ class DocumentListView:
         return JsonResponse({
             'status': 'error',
             'message': 'Phương thức không được hỗ trợ hoặc thiếu file Excel'
+        }, status=405)
+
+    @login_required(login_url="login_cms")
+    def scan_pdf(request):
+        if request.method == 'POST' and request.FILES.get('pdf_file'):
+            try:
+                pdf_file = request.FILES['pdf_file']
+                extracted_data = extract_fields_from_pdf(pdf_file)
+                
+                print("extracted_data", extracted_data)
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Scan PDF thành công!',
+                    'data': extracted_data
+                })
+                
+            except Exception as e:
+                print("e", e)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Lỗi khi scan file PDF: {str(e)}'
+                }, status=400)
+
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Phương thức không được hỗ trợ hoặc thiếu file PDF'
         }, status=405)
 
     @login_required(login_url="login_cms")

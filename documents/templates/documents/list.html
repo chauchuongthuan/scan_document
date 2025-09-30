@@ -36,6 +36,7 @@
                 </svg>
                 Tạo mới
             </a>
+            <!-- Import Button -->
             <button class="btn btn-primary w-1/12" onclick="showImportModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -187,8 +188,8 @@
     }
 
     function showImportModal() {
-    document.getElementById('importModal').classList.remove('hidden');
-}
+        document.getElementById('importModal').classList.remove('hidden');
+    }
     function hideImportModal() {
         document.getElementById('importModal').classList.add('hidden');
         document.getElementById('excelFileInput').value = '';
@@ -210,8 +211,8 @@
             const result = await response.json();
 
             if (result.status === "success") {
-                hideImportModal();
                 showMessageUploadFileExcel(result.message, result.status);
+                hideImportModal();
                 setTimeout(() => {
                     location.reload();
                 }, 3000);
