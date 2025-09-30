@@ -27,11 +27,12 @@ SECRET_KEY = "django-insecure-0b24cm&e%r9yp@6xb5n@8^z7abtqnygov)^m3ve0t(!(lvwmsp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1', '0.0.0.0', 'scan_document.nodeappplus.site']
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://scan_document.nodeappplus.site',
 ]
 # Application definition
 
