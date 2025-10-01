@@ -21,7 +21,7 @@ def gennerate_random_string(length=6):
     char = string.ascii_uppercase + string.digits
     return ''.join([str(random.choice(char)) for _ in range(length)])
 
-def extract_fields_from_pdf(pdf_file):
+def extract_fields_from_pdf(pdf_file, form_type):
     extracted_data = {}
     text = ""
     
@@ -40,14 +40,28 @@ def extract_fields_from_pdf(pdf_file):
                 text += pytesseract.image_to_string(Image.open(img_bytes)) + "\n"
     
     # Nhận diện các field bằng regex (unchanged code for initial extraction)
-    patterns = {
-        'THE BUYER': r'THE BUYER\s*([^\n\r]+)', # Added \s* to handle potential spaces
-        'CONTRACT NO': r'CONTRACT NO\s*([^\n\r]+)', # Added \s*
-        'B/L NO': r'B/L NO\s*([^\n\r]+)', # Added \s*
-        'FROM': r'FROM\s*([^\n\r]+)', # Added \s*
-        'TO': r'TO\s*([^\n\r]+)', # Added \s*
-        'Final invoice to be raised at': r'Final invoice to be raised at\s*([^\n\r]+)', # Added \s*
-    }
+    patterns = {}
+    print("form_type", form_type)
+    if form_type == "form_1":
+        patterns = {
+            'PURCHASE CONTRACT:': r'PURCHASE CONTRACT:\s*([A-Z€0-9\-]+)',
+            'Date:': r'Date:\s*([A-Za-z]+\s*\d{1,2},\s*\d{4})',
+            'BUYERS:': r'BUYERS:\s*([^\n\r]+)',
+            'SELLERS:': r'SELLERS:\s*([^\n\r]+)',
+            'ORIGIN': r'\bORIGIN\s*:\s*([^\n\r]+)',
+            'QUANTITY': r'\bQUANTITY\s*:\s*([^\n\r]+)',
+            'SHIPMENT': r'\bSHIPMENT\s*:\s*([A-Za-z]+\s*\d{4})',
+        }
+    elif form_type == "form_2":
+        patterns = {
+            'Ref': r'Ref\s*([^\n\r]+)',
+            'Final invoice to be raised at': r'Final invoice to be raised at\s*([^\n\r]+)',
+        }
+    elif form_type == "form_3":
+        patterns = {
+            'TO': r'TO\s*([^\n\r]+)',
+            'B/L NO': r'B/L NO\s*([^\n\r]+)',
+        }
     
     # Use re.search and re.IGNORECASE as before
     for field, pattern in patterns.items():
@@ -55,62 +69,109 @@ def extract_fields_from_pdf(pdf_file):
         if match:
             # Clean up the captured group
             value = match.group(1).strip()
-            # The regex r'HEADER*([^\n\r]+)' is likely missing spaces/delimiters. 
-            # I've modified the pattern above to r'HEADER\s*([^\n\r]+)'.
-            # If the header is followed by a colon and then data, adjust the pattern:
-            # e.g., r'THE BUYER:\s*([^\n\r]+)'
             if value.startswith(':'):
                  extracted_data[field] = value[1:].strip()
             else:
                  extracted_data[field] = value
         else:
             extracted_data[field] = None
-    
-    # Tách contract_no và date (unchanged code for contract processing)
-    if extracted_data.get('CONTRACT NO'):
-        contract_field = extracted_data['CONTRACT NO']
-        
-        contract_parts = re.split(r'\s*DATE:\s*', contract_field, flags=re.IGNORECASE)
-        
-        if len(contract_parts) >= 2:
-            # Lấy contract_no (bỏ dấu : ở đầu nếu có)
-            contract_no = contract_parts[0].strip()
-            if contract_no.startswith(':'):
-                contract_no = contract_no[1:].strip()
-            
-            # Lấy và chuyển đổi ngày tháng
-            date_str = contract_parts[1].strip()
-            
-            extracted_data['CONTRACT NO'] = contract_no
-            extracted_data['CONTRACT DATE'] = convert_date_format(date_str)
-        else:
-            extracted_data['CONTRACT DATE'] = None
-            
+          
     final_data = {}
     for field, value in extracted_data.items():
         if value is not None: # Only process non-None values, or keep all
             new_field_name = convert_field_name(field)
-            # Use the new field name as the key in the NEW dictionary
-            final_data[new_field_name] = value
+            if new_field_name == 'contract_date':
+                value = parse_contract_date(value)
+
+            if new_field_name == 'buyer_ref':
+                value = parse_buyer_ref(value)
+                
+            if new_field_name == 'price':
+                value = parse_price(value)
+            
+            if new_field_name == 'etd':
+                value = parse_etd(value)
+
+            if new_field_name == 'quantity':
+                parsed = parse_quantity_field(value)
+                final_data["quantity"] = parsed["quantity"]
+                final_data["packing"] = parsed["packing"]
+                final_data["conts_no"] = parsed["conts_no"]
+            else:
+                final_data[new_field_name] = value
             
     return final_data
 
 def convert_field_name(field_name):
     field_map = {
-        'THE BUYER': 'buyers',
-        'CONTRACT NO': 'comco_ref',
-        'CONTRACT DATE': 'contract_date',
-        'B/L NO': 'buyer_ref',
-        'FROM': 'from',
-        'TO': 'to',
+        # form 1
+        'PURCHASE CONTRACT:': 'comco_ref',
+        'Date:': 'contract_date',
+        'BUYERS:': 'buyers',
+        'SELLERS:': 'shippers',
+        'ORIGIN': 'quality',
+        'QUANTITY': 'quantity',
+        'SHIPMENT': 'shipment_period',
+        # form 2
+        'Ref': 'buyer_ref',
         'Final invoice to be raised at': 'price',
+        # form 3
+        'TO': 'destination',
+        'B/L NO': 'etd',
     }
     return field_map.get(field_name, field_name)
-def convert_date_format(date_str):
-    """
-    Chuyển đổi chuỗi ngày tháng từ dạng 'APR 10, 2025' sang 'YYYY-MM-DD'
-    """
+
+def parse_quantity_field(value: str):
+    result = {
+        "quantity": None,
+        "packing": None,
+        "conts_no": None
+    }
+    
+    if not value:
+        return result
+    
+    # --- Lấy quantity chính ---
+    # Tìm số đứng trước "MT"
+    m = re.search(r'(\d+(?:[\.,]\d{3})*)\s*MT', value, re.IGNORECASE)
+    if m:
+        qty_str = m.group(1).replace('.', '').replace(',', '')  # bỏ dấu . hoặc ,
+        try:
+            result["quantity"] = int(qty_str)
+        except:
+            result["quantity"] = float(qty_str)
+    
+    # --- Lấy packing ---
+    if "bulk" in value.lower():
+        result["packing"] = "bulk"
+    elif "jute" in value.lower():
+        result["packing"] = "jute bags"
+    elif "bags" in value.lower():
+        result["packing"] = "bags"
+    
+    # --- Lấy số containers ---
+    m2 = re.search(r'\((\d+)\s*containers?', value, re.IGNORECASE)
+    if m2:
+        result["conts_no"] = int(m2.group(1))
+    
+    return result
+
+def parse_buyer_ref(value: str):
+    if not value:
+        return None
+    m = re.search(r'/\s*(\d{6,})', value)
+    return m.group(1) if m else None
+
+def parse_price(value: str):
+    if not value:
+        return None
+    m = re.search(r'US\$\s*([\d\.,]+)', value, re.IGNORECASE)
+    return m.group(1).replace('.', '') if m else None
+
+def parse_etd(date_str: str):
     try:
+        parts = re.split(r'\s*DATE:\s*', date_str, flags=re.IGNORECASE)
+        print("parts", parts)
         # Map các tháng viết tắt
         month_map = {
             'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04', 'MAY': '05', 'JUN': '06',
@@ -118,7 +179,30 @@ def convert_date_format(date_str):
         }
         
         # Tách các phần của ngày tháng
-        parts = date_str.upper().replace(',', '').split()
+        parts = parts[1].upper().replace(',', '').split()
+        if len(parts) == 3:
+            month_abbr, day, year = parts
+            month = month_map.get(month_abbr, '01')
+            
+            # Đảm bảo day có 2 chữ số
+            day = day.zfill(2)
+            
+            return f"{year}-{month}-{day}"
+        else:
+            return None
+    except Exception:
+        return None
+
+def parse_contract_date(date_str):
+    try:
+        # Map các tháng viết tắt
+        month_map = {
+            'January': '01', 'February': '02', 'March': '03', 'April': '04', 'May': '05', 'June': '06',
+            'July': '07', 'August': '08', 'September': '09', 'October': '10', 'November': '11', 'December': '12'
+        }
+        
+        # Tách các phần của ngày tháng
+        parts = date_str.replace(',', '').split()
         if len(parts) == 3:
             month_abbr, day, year = parts
             month = month_map.get(month_abbr, '01')

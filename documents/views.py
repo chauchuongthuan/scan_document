@@ -26,7 +26,7 @@ class DocumentListView:
         per_page = request.GET.get('per_page', 10)
 
         query_name_search = request.GET.get('name_search')
-        documents = Document.objects.all()
+        documents = Document.objects.all().order_by('-created_at')
         
         if query_name_search:
             documents = documents.filter(
@@ -66,10 +66,10 @@ class DocumentListView:
                 packing = request.POST.get('packing')
                 sample = request.POST.get('sample')
                 result = request.POST.get('result')
-                stuffing_date = request.POST.get('stuffing_date')
+                stuffing_date = request.POST.get('stuffing_date') or None
                 carriers = request.POST.get('carriers')
                 booking_no = request.POST.get('booking_no')
-                etd = request.POST.get('etd')
+                etd = request.POST.get('etd') or None
                 eta = request.POST.get('eta')
                 destination = request.POST.get('destination')
                 inspectors = request.POST.get('inspectors')
@@ -133,16 +133,19 @@ class DocumentListView:
                 file_path = os.path.join(default_storage.location, temp_file_path)
 
                 # Read Excel file
-                df = pd.read_excel(file_path, header=0)  # Assuming first row is header
+                df = pd.read_excel(file_path, header=2)  # Assuming third row is header
 
+                # Remove leading/trailing whitespace and convert to uppercase
+                df.columns = df.columns.str.strip().str.upper()
+                
                 # Expected columns based on Document model
                 expected_columns = [
-                    'comco_ref', 'buyer_ref', 'contract_date', 'price', 'dds_and_geo',
-                    'docs', 'shippers', 'buyers', 'shipment_period', 'quality',
-                    'quantity', 'conts_no', 'packing', 'sample', 'result',
-                    'stuffing_date', 'carriers', 'booking_no', 'etd', 'eta',
-                    'destination', 'inspectors', 'warehouse', 'status',
-                    'weight_claim', 'remark'
+                    'COMCO REF', 'BUYER REF', 'CONTRACT DATE', 'PRICE', 'DDS & GEO',
+                    'DOCS', 'SHIPPERS', 'BUYERS', 'SHIPMENT PERIOD', 'QUALITY',
+                    'QUANTITY', 'CONTS NO', 'PACKING', 'SAMPLE', 'RESULTS',
+                    'STUFFING DATE', 'CARRIERS', 'BOOKING NO', 'ETD', 'ETA',
+                    'DESTINATION', 'INSPECTORS', 'WAREHOUSE', 'STATUS',
+                    'WEIGHT CLAIM', 'REMARK'
                 ]
 
                 # Check if all required columns are present
@@ -160,60 +163,59 @@ class DocumentListView:
                 for index, row in df.iterrows():
                     try:
                         # Convert date fields to proper format
-                        contract_date = pd.to_datetime(row['contract_date']).date() if pd.notna(row['contract_date']) else None
-                        stuffing_date = pd.to_datetime(row['stuffing_date']).date() if pd.notna(row['stuffing_date']) else None
-                        etd = pd.to_datetime(row['etd']).date() if pd.notna(row['etd']) else None
+                        contract_date = pd.to_datetime(row['CONTRACT DATE']).date() if pd.notna(row['CONTRACT DATE']) else None
+                        stuffing_date = pd.to_datetime(row['STUFFING DATE']).date() if pd.notna(row['STUFFING DATE']) else None
+                        etd = pd.to_datetime(row['ETD']).date() if pd.notna(row['ETD']) else None
 
+                        def safe_str_excel(value):
+                            return "" if pd.isna(value) else str(value)
                         document = Document(
-                            comco_ref=str(row.get('comco_ref', '')),
-                            buyer_ref=str(row.get('buyer_ref', '')),
+                            comco_ref=safe_str_excel(row.get('COMCO REF', '')),
+                            buyer_ref=safe_str_excel(row.get('BUYER REF', '')),
                             contract_date=contract_date,
-                            price=str(row.get('price', '')),
-                            dds_and_geo=str(row.get('dds_and_geo', '')),
-                            docs=str(row.get('docs', '')),
-                            shippers=str(row.get('shippers', '')),
-                            buyers=str(row.get('buyers', '')),
-                            shipment_period=str(row.get('shipment_period', '')),
-                            quality=str(row.get('quality', '')),
-                            quantity=str(row.get('quantity', '')),
-                            conts_no=str(row.get('conts_no', '')),
-                            packing=str(row.get('packing', '')),
-                            sample=str(row.get('sample', '')),
-                            result=str(row.get('result', '')),
+                            price=safe_str_excel(row.get('PRICE', '')),
+                            dds_and_geo=safe_str_excel(row.get('DDS & GEO', '')),
+                            docs=safe_str_excel(row.get('DOCS', '')),
+                            shippers=safe_str_excel(row.get('SHIPPERS', '')),
+                            buyers=safe_str_excel(row.get('BUYERS', '')),
+                            shipment_period=safe_str_excel(row.get('SHIPMENT PERIOD', '')),
+                            quality=safe_str_excel(row.get('QUALITY', '')),
+                            quantity=safe_str_excel(row.get('QUANTITY', '')),
+                            conts_no=safe_str_excel(row.get('CONTS NO', '')),
+                            packing=safe_str_excel(row.get('PACKING', '')),
+                            sample=safe_str_excel(row.get('SAMPLE', '')),
+                            result=safe_str_excel(row.get('RESULT', '')),
                             stuffing_date=stuffing_date,
-                            carriers=str(row.get('carriers', '')),
-                            booking_no=str(row.get('booking_no', '')),
+                            carriers=safe_str_excel(row.get('CARRIERS', '')),
+                            booking_no=safe_str_excel(row.get('BOOKING NO', '')),
                             etd=etd,
-                            eta=str(row.get('eta', '')),
-                            destination=str(row.get('destination', '')),
-                            inspectors=str(row.get('inspectors', '')),
-                            warehouse=str(row.get('warehouse', '')),
-                            status=str(row.get('status', '')),
-                            weight_claim=str(row.get('weight_claim', '')),
-                            remark=str(row.get('remark', ''))
+                            eta=safe_str_excel(row.get('ETA', '')),
+                            destination=safe_str_excel(row.get('DESTINATION', '')),
+                            inspectors=safe_str_excel(row.get('INSPECTORS', '')),
+                            warehouse=safe_str_excel(row.get('WAREHOUSE', '')),
+                            status=safe_str_excel(row.get('STATUS', '')),
+                            weight_claim=safe_str_excel(row.get('WEIGHT CLAIM', '')),
+                            remark=safe_str_excel(row.get('REMARK', ''))
                         )
                         document.save()
                         imported_count += 1
 
                     except Exception as e:
                         error_count += 1
-                        errors.append(f"Dòng {index + 2}")  # +2 because Excel rows start at 1 and header is row 1
+                        errors.append(f"Dòng {index + 1}") 
 
                 # Clean up temporary file
                 if os.path.exists(file_path):
                     os.remove(file_path)    
-                if error_count > 0:
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': f'Import thất bại: {errors}'
-                    }, status=400)
                 
-                message = f'Import thành công {imported_count} bản ghi.'
+                message = f'Import thành công {imported_count} bản ghi. {error_count} bản ghi lỗi: {errors}'
 
                 return JsonResponse({
                     'status': 'success',
                     'message': message,
                     'imported_count': imported_count,
+                    'error_count': error_count,
+                    'errors': errors
                 })
 
             except Exception as e:
@@ -227,12 +229,14 @@ class DocumentListView:
             'message': 'Phương thức không được hỗ trợ hoặc thiếu file Excel'
         }, status=405)
 
+    
     @login_required(login_url="login_cms")
     def scan_pdf(request):
         if request.method == 'POST' and request.FILES.get('pdf_file'):
             try:
                 pdf_file = request.FILES['pdf_file']
-                extracted_data = extract_fields_from_pdf(pdf_file)
+                form_type = request.POST.get('form_type')
+                extracted_data = extract_fields_from_pdf(pdf_file, form_type)
                 
                 print("extracted_data", extracted_data)
                 return JsonResponse({
@@ -273,10 +277,10 @@ class DocumentListView:
                 packing = request.POST.get('packing')
                 sample = request.POST.get('sample')
                 result = request.POST.get('result')
-                stuffing_date = request.POST.get('stuffing_date')
+                stuffing_date = request.POST.get('stuffing_date') or None
                 carriers = request.POST.get('carriers')
                 booking_no = request.POST.get('booking_no')
-                etd = request.POST.get('etd')
+                etd = request.POST.get('etd') or None
                 eta = request.POST.get('eta')
                 destination = request.POST.get('destination')
                 inspectors = request.POST.get('inspectors')
