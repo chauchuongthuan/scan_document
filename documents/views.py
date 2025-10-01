@@ -204,9 +204,8 @@ class DocumentListView:
                         error_count += 1
                         errors.append(f"Dòng {index + 1}") 
 
-                # Clean up temporary file
-                if os.path.exists(file_path):
-                    os.remove(file_path)    
+                
+                os.remove(file_path)    
                 
                 message = f'Import thành công {imported_count} bản ghi. {error_count} bản ghi lỗi: {errors}'
 

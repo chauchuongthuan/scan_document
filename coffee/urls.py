@@ -18,15 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django_ckeditor_5 import views as ckeditor_views
+# from django_ckeditor_5 import views as ckeditor_views
 from django.views.decorators.csrf import csrf_exempt
 from auth.views import LoginView, logout_account
 from django.views.generic.base import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('ckeditor5/', include('django_ckeditor_5.urls')),
-    path('ckeditor5/image_upload/', csrf_exempt(ckeditor_views.upload_file), name='ckeditor_image_upload'),
+    # path('ckeditor5/', include('django_ckeditor_5.urls')),
+    # path('ckeditor5/image_upload/', csrf_exempt(ckeditor_views.upload_file), name='ckeditor_image_upload'),
 
     path('', RedirectView.as_view(url='/cms/login/')),
 
