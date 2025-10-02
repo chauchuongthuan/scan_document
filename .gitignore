@@ -28,3 +28,4 @@ node_modules
 .git
 django-shop
 docker-compose.yml
+nginx/nginx.conf
