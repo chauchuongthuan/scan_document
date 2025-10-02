@@ -8,7 +8,6 @@ from PIL import Image
 import io
 import re
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 def generate_order_id():
     while True:
         # Tạo mã vé 12 chữ số ngẫu nhiên
