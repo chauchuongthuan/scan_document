@@ -18,6 +18,7 @@ import pandas as pd
 import json
 from coffee.helpers import extract_fields_from_pdf
 import openpyxl
+# from openpyxl.styles import Alignment
 import datetime
 # Document Views
 class DocumentListView:
@@ -52,7 +53,6 @@ class DocumentListView:
         if request.method == 'POST':
             try:
                 # Lấy dữ liệu từ request.POST
-                print("request.POST::::", request.POST)
                 comco_ref = request.POST.get('comco_ref')
                 buyer_ref = request.POST.get('buyer_ref')
                 contract_date = request.POST.get('contract_date')
@@ -318,13 +318,9 @@ class DocumentListView:
                 if 'Sheet' in workbook.sheetnames:
                     del workbook['Sheet']
                 
-                # Dòng 1: Tiêu đề "SCHEDULE" (merge từ A1 đến Z1)
-                worksheet.merge_cells('A1:Z1')
+                # Merge dòng 1 và dòng 2: Tiêu đề "SCHEDULE" (merge từ A1 đến Z2)
+                worksheet.merge_cells('A1:Z2')
                 worksheet['A1'] = 'SCHEDULE'
-                from openpyxl.styles import Alignment
-                worksheet['A1'].alignment = Alignment(horizontal='center')
-                
-                # Dòng 2: Để trống
                 
                 # Dòng 3: Headers
                 headers = [
@@ -365,7 +361,7 @@ class DocumentListView:
                 print("extracted_data", extracted_data)
                 return JsonResponse({
                     'status': 'success',
-                    'message': 'Scan PDF thành công!',
+                    'message': 'Scan File thành công!',
                     'data': extracted_data
                 })
                 
@@ -373,12 +369,12 @@ class DocumentListView:
                 print("e", e)
                 return JsonResponse({
                     'status': 'error',
-                    'message': f'Lỗi khi scan file PDF: {str(e)}'
+                    'message': f'Lỗi khi scan file: {str(e)}'
                 }, status=400)
 
         return JsonResponse({
             'status': 'error',
-            'message': 'Phương thức không được hỗ trợ hoặc thiếu file PDF'
+            'message': 'Phương thức không được hỗ trợ hoặc thiếu file'
         }, status=405)
 
     @login_required(login_url="login_cms")

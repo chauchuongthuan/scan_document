@@ -53,7 +53,6 @@ def extract_fields_from_pdf(pdf_file, form_type):
     
     # Nhận diện các field bằng regex (unchanged code for initial extraction)
     patterns = {}
-    print("form_type", form_type)
     if form_type == "form_1":
         patterns = {
             'PURCHASE CONTRACT:': r'PURCHASE CONTRACT:\s*([A-Z€0-9\-]+)',
@@ -182,9 +181,7 @@ def parse_price(value: str):
 
 def parse_etd(date_str: str):
     try:
-        print("date_str", date_str)
         parts = re.split(r'\s*DATE:\s*', date_str, flags=re.IGNORECASE)
-        print("parts", parts)
         # Map các tháng viết tắt
         month_map = {
             'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04', 'MAY': '05', 'JUN': '06',

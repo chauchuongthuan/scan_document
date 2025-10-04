@@ -86,7 +86,7 @@
                     <td class="!text-center"> 
                         <div class="flex items-center justify-center gap-4"> 
                             <a href="{% url 'document-update' document.pk %}" class="btn btn-sm btn-outline-primary"> Edit </a> 
-                            <button class="btn btn-sm btn-outline-danger" data-delete-url="{% url 'document-delete' document.pk %}" data-name="{{ document.name }}" onclick="showDeleteConfirmation(this)"> Delete </button> 
+                            <button class="btn btn-sm btn-outline-danger" data-delete-url="{% url 'document-delete' document.pk %}" data-name="{{ document.comco_ref }}" onclick="showDeleteConfirmation(this)"> Delete </button> 
                         </div> 
                     </td> 
                 </tr> 

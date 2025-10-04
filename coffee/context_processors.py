@@ -305,7 +305,6 @@ def global_context(request):
                 'view_products': 'products.view_product' in permissions,
             }
             cache.set(cache_key, permission_list, timeout=60 * 10)  # Cache for 10 minutes
-            print("permission_list: ", permission_list)
             
         return {
             'permission_list': permission_list,
