@@ -406,8 +406,7 @@
     event.preventDefault();
     const requiredFields = [
         'comco_ref', 'buyer_ref', 'contract_date', 'price', 'shippers', 'buyers', 
-        'quality', 'quantity', 'conts_no', 'packing', 'shipment_period', 'carriers', 
-        'booking_no', 'destination'
+        'quality', 'quantity', 'conts_no', 'packing', 'shipment_period', 'destination'
     ];
     if (requiredFields.some(field => !documentForm[field].value)) {
         requiredFields.forEach(field => {

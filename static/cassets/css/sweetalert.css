@@ -130,18 +130,12 @@
   color: #fb4 !important;
   border: 5px solid #f1f2f3 !important;
   box-shadow: 0px 3px 25px 0px rgba(113, 106, 202, 0.2);
-  font-size: 60px;
-  line-height: 80px;
-  text-align: center;
 }
 
 .swal2-icon.swal2-info {
   color: #4361ee !important;
   border: 5px solid #f1f2f3 !important;
   box-shadow: 0px 3px 25px 0px rgba(113, 106, 202, 0.2);
-  font-size: 60px;
-  line-height: 80px;
-  text-align: center;
 }
 
 .swal2-icon.swal2-question {
@@ -151,9 +145,6 @@
   border-color: transparent !important;
   text-align: center;
   box-shadow: 0px 3px 25px 0px rgba(113, 106, 202, 0.2);
-  font-size: 60px;
-  line-height: 80px;
-  text-align: center;
 }
 
 .dark .swal2-icon.swal2-question,

@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
@@ -17,6 +17,8 @@ from django.contrib.auth.decorators import login_required
 import pandas as pd
 import json
 from coffee.helpers import extract_fields_from_pdf
+import openpyxl
+import datetime
 # Document Views
 class DocumentListView:
     @login_required(login_url="login_cms")
@@ -133,7 +135,12 @@ class DocumentListView:
                 file_path = os.path.join(default_storage.location, temp_file_path)
 
                 # Read Excel file
-                df = pd.read_excel(file_path, header=2)  # Assuming third row is header
+                df = pd.read_excel(
+                    file_path,
+                    header=2,
+                    parse_dates=['CONTRACT DATE', 'STUFFING DATE', 'ETD'], # Specify columns to parse
+                    date_parser=lambda x: pd.to_datetime(x, format='%d/%m/%Y', errors='coerce')
+                )
 
                 # Remove leading/trailing whitespace and convert to uppercase
                 df.columns = df.columns.str.strip().str.upper()
@@ -162,17 +169,13 @@ class DocumentListView:
 
                 for index, row in df.iterrows():
                     try:
-                        # Convert date fields to proper format
-                        contract_date = pd.to_datetime(row['CONTRACT DATE']).date() if pd.notna(row['CONTRACT DATE']) else None
-                        stuffing_date = pd.to_datetime(row['STUFFING DATE']).date() if pd.notna(row['STUFFING DATE']) else None
-                        etd = pd.to_datetime(row['ETD']).date() if pd.notna(row['ETD']) else None
-
                         def safe_str_excel(value):
                             return "" if pd.isna(value) else str(value)
+                        
                         document = Document(
                             comco_ref=safe_str_excel(row.get('COMCO REF', '')),
                             buyer_ref=safe_str_excel(row.get('BUYER REF', '')),
-                            contract_date=contract_date,
+                            contract_date=row.get('CONTRACT DATE'),
                             price=safe_str_excel(row.get('PRICE', '')),
                             dds_and_geo=safe_str_excel(row.get('DDS & GEO', '')),
                             docs=safe_str_excel(row.get('DOCS', '')),
@@ -185,10 +188,10 @@ class DocumentListView:
                             packing=safe_str_excel(row.get('PACKING', '')),
                             sample=safe_str_excel(row.get('SAMPLE', '')),
                             result=safe_str_excel(row.get('RESULT', '')),
-                            stuffing_date=stuffing_date,
+                            stuffing_date=row.get('STUFFING DATE'),
                             carriers=safe_str_excel(row.get('CARRIERS', '')),
                             booking_no=safe_str_excel(row.get('BOOKING NO', '')),
-                            etd=etd,
+                            etd=row.get('ETD'),
                             eta=safe_str_excel(row.get('ETA', '')),
                             destination=safe_str_excel(row.get('DESTINATION', '')),
                             inspectors=safe_str_excel(row.get('INSPECTORS', '')),
@@ -209,12 +212,29 @@ class DocumentListView:
                 
                 message = f'Import thành công {imported_count} bản ghi. {error_count} bản ghi lỗi: {errors}'
 
-                return JsonResponse({
-                    'status': 'success',
-                    'message': message,
-                    'imported_count': imported_count,
-                    'error_count': error_count,
-                    'errors': errors
+                if error_count > 0 and error_count < len(df):
+                    return JsonResponse({
+                        'status': 'warning',
+                        'message': message,
+                        'imported_count': imported_count,
+                        'error_count': error_count,
+                        'errors': errors
+                    })
+                elif error_count > 0 and error_count == len(df):
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Import thất bại, tất cả các bản ghi đều lỗi',
+                        'imported_count': imported_count,
+                        'error_count': error_count,
+                        'errors': errors
+                    })
+                elif error_count == 0:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': message,
+                        'imported_count': imported_count,
+                        'error_count': error_count,
+                        'errors': errors
                 })
 
             except Exception as e:
@@ -228,7 +248,112 @@ class DocumentListView:
             'message': 'Phương thức không được hỗ trợ hoặc thiếu file Excel'
         }, status=405)
 
-    
+    @login_required(login_url="login_cms")
+    def export_excel(request):
+        try:
+            # Lấy tất cả documents từ database
+            documents = Document.objects.all().order_by('comco_ref')
+            
+            # Tạo DataFrame từ dữ liệu documents
+            data = []
+            for document in documents:
+                # Format date fields to dd/mm/yyyy
+                def format_date(date_field):
+                    if date_field:
+                        if isinstance(date_field, (datetime.date, datetime.datetime)):
+                            return date_field.strftime('%d/%m/%Y')
+                        # Nếu là string, cố gắng parse và format lại
+                        try:
+                            parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
+                            return parsed_date.strftime('%d/%m/%Y')
+                        except:
+                            return str(date_field)
+                    return ""
+                
+                data.append({
+                    'COMCO REF': document.comco_ref,
+                    'BUYER REF': document.buyer_ref,
+                    'CONTRACT DATE': format_date(document.contract_date),
+                    'PRICE': document.price,
+                    'DDS & GEO': document.dds_and_geo,
+                    'DOCS': document.docs,
+                    'SHIPPERS': document.shippers,
+                    'BUYERS': document.buyers,
+                    'SHIPMENT PERIOD': document.shipment_period,
+                    'QUALITY': document.quality,
+                    'QUANTITY': document.quantity,
+                    'CONTS NO': document.conts_no,
+                    'PACKING': document.packing,
+                    'SAMPLE': document.sample,
+                    'RESULTS': document.result,
+                    'STUFFING DATE': format_date(document.stuffing_date),
+                    'CARRIERS': document.carriers,
+                    'BOOKING NO': document.booking_no,
+                    'ETD': format_date(document.etd),
+                    'ETA': document.eta,
+                    'DESTINATION': document.destination,
+                    'INSPECTORS': document.inspectors,
+                    'WAREHOUSE': document.warehouse,
+                    'STATUS': document.status,
+                    'WEIGHT CLAIM': document.weight_claim,
+                    'REMARK': document.remark
+                })
+            
+            df = pd.DataFrame(data)
+            # Tạo HTTP response
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            )
+            filename = f"schedule_export.xlsx"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            # Tạo Excel file với cấu trúc giống file mẫu
+            with pd.ExcelWriter(response, engine='openpyxl') as writer:
+                # Tạo workbook
+                workbook = writer.book
+                
+                worksheet = workbook.create_sheet("SCHEDULE", 0)
+                
+                # Xóa sheet mặc định nếu có
+                if 'Sheet' in workbook.sheetnames:
+                    del workbook['Sheet']
+                
+                # Dòng 1: Tiêu đề "SCHEDULE" (merge từ A1 đến Z1)
+                worksheet.merge_cells('A1:Z1')
+                worksheet['A1'] = 'SCHEDULE'
+                from openpyxl.styles import Alignment
+                worksheet['A1'].alignment = Alignment(horizontal='center')
+                
+                # Dòng 2: Để trống
+                
+                # Dòng 3: Headers
+                headers = [
+                    'COMCO REF', 'BUYER REF', 'CONTRACT DATE', 'PRICE', 'DDS & GEO', 'DOCS',
+                    'SHIPPERS', 'BUYERS', 'SHIPMENT PERIOD', 'QUALITY', 'QUANTITY', 'CONTS NO',
+                    'PACKING', 'SAMPLE', 'RESULTS', 'STUFFING DATE', 'CARRIERS', 'BOOKING NO',
+                    'ETD', 'ETA', 'DESTINATION', 'INSPECTORS', 'WAREHOUSE', 'STATUS',
+                    'WEIGHT CLAIM', 'REMARK'
+                ]
+                
+                for col, header in enumerate(headers, 1):
+                    cell = worksheet.cell(row=3, column=col, value=header)
+                    # Có thể thêm style cho header nếu cần
+                    cell.font = openpyxl.styles.Font(bold=True)
+                
+                # Ghi dữ liệu từ DataFrame (bắt đầu từ dòng 4)
+                if not df.empty:
+                    for row_idx, row_data in enumerate(df.itertuples(), 4):
+                        for col_idx, value in enumerate(row_data[1:], 1):  # Bỏ qua index
+                            worksheet.cell(row=row_idx, column=col_idx, value=value)
+            
+            return response
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Export Excel thất bại: {str(e)}'
+            }, status=400)
+
     @login_required(login_url="login_cms")
     def scan_pdf(request):
         if request.method == 'POST' and request.FILES.get('pdf_file'):

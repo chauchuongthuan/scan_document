@@ -10,4 +10,5 @@ urlpatterns = [
     path('<uuid:pk>/delete/', DocumentListView.delete_document, name='document-delete'),
     path('import-excel/', DocumentListView.import_excel, name='document-import-excel'),
     path('scan-pdf/', DocumentListView.scan_pdf, name='document-scan-pdf'),
+    path('export-excel/', DocumentListView.export_excel, name='document-export-excel'),
 ]

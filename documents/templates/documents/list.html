@@ -19,10 +19,10 @@
     <div class="panel">
         <div class="flex items-center justify-between mb-4">
             <!-- Search Form -->
-            <form method="GET" action="{% url 'document-list' %}" class="flex items-center w-10/12 mr-2">
+            <form method="GET" action="{% url 'document-list' %}" class="flex items-center w-9/12 mr-2">
                 <input type="text" 
                        name="name_search" 
-                       placeholder="Comco or Buyer ref" 
+                       placeholder="Comco ref or Buyer ref" 
                        class="form-input w-2/12 mr-2" 
                        value="{{ request.GET.name_search }}">
                 <button type="submit" class="btn btn-primary ml-2 w-2/12" style="justify-items: flex-end;">Tìm kiếm</button>
@@ -38,11 +38,17 @@
             </a>
             <!-- Import Button -->
             <button class="btn btn-primary w-1/12" onclick="showImportModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21 14a1 1 0 0 0-1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4a1 1 0 0 0-2 0v4a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-4a1 1 0 0 0-1-1Zm-9.71 1.71a1 1 0 0 0 .33.21a.94.94 0 0 0 .76 0a1 1 0 0 0 .33-.21l4-4a1 1 0 0 0-1.42-1.42L13 12.59V3a1 1 0 0 0-2 0v9.59l-2.29-2.3a1 1 0 1 0-1.42 1.42Z"/>
                 </svg>
                 Import
+            </button>
+            <!-- Export Button -->
+            <button class="btn btn-success w-1/12" onclick="exportExcel()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M8.71 7.71L11 5.41V15a1 1 0 0 0 2 0V5.41l2.29 2.3a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42l-4-4a1 1 0 0 0-.33-.21a1 1 0 0 0-.76 0a1 1 0 0 0-.33.21l-4 4a1 1 0 1 0 1.42 1.42ZM21 14a1 1 0 0 0-1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4a1 1 0 0 0-2 0v4a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-4a1 1 0 0 0-1-1Z"/>
+                </svg>
+                Export
             </button>
         </div>
         <!-- Modal Import -->
@@ -210,22 +216,22 @@
 
             const result = await response.json();
 
-            if (result.status === "success") {
-                showMessageUploadFileExcel(result.message, result.status);
+            if (result.status === "success" || result.status === "warning") {
+                showMessageFileExcel(result.message, result.status);
                 hideImportModal();
                 setTimeout(() => {
                     location.reload();
                 }, 3000);
             }
             else {
-                showMessageUploadFileExcel(result.message, result.status);
+                showMessageFileExcel(result.message, result.status);
                 hideImportModal();
             }
         } catch (error) {
-            showMessageUploadFileExcel("Lỗi khi upload file: " + error, "error");
+            showMessageFileExcel("Lỗi khi upload file: " + error, "error");
         }
     });
-    function showMessageUploadFileExcel(msg = "", type = 'success') {
+    function showMessageFileExcel(msg = "", type = 'success') {
         const toast = window.Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -236,6 +242,34 @@
             icon: type,
             title: msg,
             padding: '2em'
+        });
+    }
+    async function exportExcel() {
+        const response = await fetch('{% url "document-export-excel" %}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        }).then(response => {
+        if (response.ok) {
+            return response.blob();
+        }
+        throw new Error('Export failed');
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `schedule_export.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            showMessageFileExcel('Export Excel thành công!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessageFileExcel('Export Excel thất bại!', 'error');
         });
     }
 </script>

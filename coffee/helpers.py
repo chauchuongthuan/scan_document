@@ -23,20 +23,33 @@ def gennerate_random_string(length=6):
 def extract_fields_from_pdf(pdf_file, form_type):
     extracted_data = {}
     text = ""
-    
-    with pdfplumber.open(pdf_file) as pdf:
-        for page in pdf.pages:
-            # Thử trích xuất văn bản trực tiếp
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-            else:
-                # Nếu không có text, sử dụng OCR cho ảnh
-                img = page.to_image()
-                img_bytes = io.BytesIO()
-                img.save(img_bytes, format='PNG')
-                # NOTE: pytesseract and PIL must be imported/available
-                text += pytesseract.image_to_string(Image.open(img_bytes)) + "\n"
+    file_name = pdf_file.name.lower()
+    # Process if it's an image file
+    if file_name.endswith(('.png', '.jpg', '.jpeg')):
+        try:
+            # Open the image file and perform OCR directly
+            image = Image.open(pdf_file)
+            text = pytesseract.image_to_string(image)
+        except Exception as e:
+            print(f"Error processing image file: {str(e)}")
+            return {}  # Or handle the error as you prefer
+
+    # Process if it's a PDF file (your existing logic)
+    elif file_name.endswith('.pdf'):
+        with pdfplumber.open(pdf_file) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+                else:
+                    # Use OCR for scanned image pages
+                    img = page.to_image()
+                    img_bytes = io.BytesIO()
+                    img.save(img_bytes, format='PNG')
+                    text += pytesseract.image_to_string(Image.open(img_bytes)) + "\n"
+    else:
+        print("Unsupported file format")
+        return {}
     
     # Nhận diện các field bằng regex (unchanged code for initial extraction)
     patterns = {}
@@ -169,6 +182,7 @@ def parse_price(value: str):
 
 def parse_etd(date_str: str):
     try:
+        print("date_str", date_str)
         parts = re.split(r'\s*DATE:\s*', date_str, flags=re.IGNORECASE)
         print("parts", parts)
         # Map các tháng viết tắt
