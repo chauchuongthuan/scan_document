@@ -23,7 +23,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://0.0.0.0:7070',
     'http://localhost:7070',
-    'https://scandocument.nodeappplus.site',
+    'https://scandocumentdo.nodeappplus.site',
 ]
 
 # Cấu hình Tesseract cho Linux (Docker)

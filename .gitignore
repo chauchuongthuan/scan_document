@@ -29,3 +29,4 @@ node_modules
 django-shop
 docker-compose.yml
 nginx/nginx.conf
+init-letsencrypt.sh
