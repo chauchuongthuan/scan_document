@@ -31,6 +31,8 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/cms/login/')),
 
     path('documents/', include('documents.urls')),
+    path('keywords/', include('keywords.urls')),
+    path('entropy-calculator/', include('entropyCalculator.urls')),
 
     # AUTH CMS
     path('cms/login/', LoginView.as_view(), name='login_cms'),

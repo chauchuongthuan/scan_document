@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     "storages",
     "documents",
+    "keywords",
+    "entropyCalculator",
 ]
 
 MIDDLEWARE = [
