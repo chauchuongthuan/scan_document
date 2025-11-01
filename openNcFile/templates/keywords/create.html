@@ -1,0 +1,240 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'components/common/confirm_modal.html' %}
+<script src="{% static 'js/confirm_modal.js' %}"></script>
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Phân loại từ khóa</a></li>
+    </ol>
+    <div class="panel">
+    <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
+        Phân loại từ khóa
+    </h5>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="hidden fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 w-full h-full">
+        <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span class="text-lg font-medium">Đang xử lý file...</span>
+        </div>
+    </div>
+    <div>
+        <form
+            id="keywordForm"
+            method="post"
+            enctype="multipart/form-data"
+            action="{% url 'keyword-create' %}"
+            class="space-y-5"
+        >
+            {% csrf_token %}
+            <div class="flex items-center justify-center">
+                <label
+                for="excelFileInput"
+                class="flex flex-col items-center justify-center w-full h-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 overflow-hidden"
+                >
+                <div
+                    class="flex flex-col items-center justify-center pt-5 pb-6 mb-6"
+                >
+                    <svg
+                    class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 20 16"
+                    >
+                    <path
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                    />
+                    </svg>
+                    <p id="filePreviewName" class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span class="font-semibold">Click to upload file</span>
+                    </p>
+                </div>
+                <input
+                    id="excelFileInput"
+                    type="file"
+                    name="excel_file"
+                    class="hidden"
+                    accept=".xlsx, .xls, .csv"
+                />
+                </label>
+            </div>
+            <div class="mt-6 flex justify-end">
+            <button type="submit" onclick="submitForm(event)" class="btn btn-primary">Thêm mới</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+<script>
+    function showMessage(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            // didClose: () => {
+            //     window.location.reload();
+            // }
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function showMessageFileExcel(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function previewFileName(input) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          $("#filePreviewName").text(input.files[0].name);
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    $(document).ready(function () {
+      $("#excelFileInput").change(function () {
+        previewFileName(this);
+      });
+    });
+
+    // Thêm các sự kiện drag and drop
+    const fileInput = document.getElementById('excelFileInput');
+    const fileLabel = fileInput.closest('label');
+    const filePreviewName = document.getElementById('filePreviewName');
+
+    // Sự kiện khi kéo file vào label
+    fileLabel.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('border-blue-500', 'bg-blue-50');
+        this.classList.remove('border-gray-300');
+    });
+
+    // Sự kiện khi rời khỏi label
+    fileLabel.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-blue-500', 'bg-blue-50');
+        this.classList.add('border-gray-300');
+    });
+
+    // Sự kiện khi thả file
+    fileLabel.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-blue-500', 'bg-blue-50');
+        this.classList.add('border-gray-300');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            console.log("file.type::::", file.type);
+            // Kiểm tra định dạng file
+            const allowedTypes = ['.xlsx', '.xls', '.csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
+            if (!allowedTypes.includes(file.type)) {
+                showMessage('Chỉ chấp nhận file Excel', 'error');
+                return;
+            }
+            
+            // Kiểm tra kích thước file (tối đa 10MB)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showMessage('File không được vượt quá 10MB', 'error');
+                return;
+            }
+            
+            // Cập nhật input file và hiển thị tên
+            fileInput.files = files;
+            updateFileName(file.name);
+        }
+    });
+
+    // Cập nhật sự kiện change cho input file để đồng bộ với drag & drop
+    fileInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) {
+            updateFileName(this.files[0].name);
+        }
+    });
+
+    // Hàm cập nhật tên file
+    function updateFileName(fileName) {
+        filePreviewName.innerHTML = `<span class="font-semibold">${fileName}</span>`;
+    }
+
+    function showLoadingScreen() {
+        console.log('showLoadingScreen');
+        document.getElementById('loadingScreen').classList.remove('hidden');
+    }
+
+    function hideLoadingScreen() {
+        console.log('hideLoadingScreen');
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('excelFileInput').value = '';
+        $("#filePreviewName").text('Click to upload file');
+    }
+
+    function submitForm(event) {
+        showLoadingScreen();
+        const keywordForm = document.getElementById('keywordForm');
+        event.preventDefault();
+        
+        const formData = new FormData(keywordForm);
+
+        formData.forEach((value, key) => {
+            console.log(key, value);
+        });
+        fetch(keywordForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage(data.message, data.status);
+            if (data.status === 'success' && data.unmatched_file && data.matched_file) {
+                window.location.href = data.matched_file;
+                setTimeout(() => {
+                    window.location.href = data.unmatched_file;
+                }, 500);
+            }
+            hideLoadingScreen();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            hideLoadingScreen();
+            showMessage('Submit failed', 'error');
+        });
+        
+    }
+</script>
+{% endblock %}

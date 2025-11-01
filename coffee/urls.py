@@ -33,6 +33,7 @@ urlpatterns = [
     path('documents/', include('documents.urls')),
     path('keywords/', include('keywords.urls')),
     path('entropy-calculator/', include('entropyCalculator.urls')),
+    path('open-nc-file/', include('openNcFile.urls')),
 
     # AUTH CMS
     path('cms/login/', LoginView.as_view(), name='login_cms'),

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "documents",
     "keywords",
     "entropyCalculator",
+    "openNcFile",
 ]
 
 MIDDLEWARE = [

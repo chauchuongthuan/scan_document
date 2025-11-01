@@ -14,18 +14,33 @@
                 </svg>
             </a>
         </li>
-        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Phân loại từ khóa</a></li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Tính toán</a></li>
     </ol>
     <div class="panel">
     <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
-        Phân loại từ khóa
+        Semantic Entropy Each Paragraph
     </h5>
     <!-- Result Screen -->
-    <div id="resultScreen" class="hidden fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 w-full h-full">
-        <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
-            <span>Average entropy: <span id="average_entropy"></span></span>
-            <span>Total entropy: <span id="total_entropy"></span></span>
-            <span>Sentence details: <span id="sentence_details"></span></span>
+    <div id="resultScreen" class="hidden fixed inset-0 bg-black/60 flex items-start justify-center z-50 w-full h-full overflow-y-auto py-10">
+        <div class="bg-white p-6 rounded-lg w-4/5 max-h-[90vh] overflow-y-auto">
+            <div class="mb-4">
+                <div class="mb-2 text-lg font-bold text-black">
+                    Final Semantic Entropy: <span id="final_semantic_entropy"></span>
+                </div>
+
+                <!-- Tabs container -->
+                <div id="tabsContainer" class="border-b mb-4 flex flex-wrap gap-2"></div>
+
+                <!-- Content container -->
+                <div id="tabContents"></div>
+            </div>
+
+            <!-- Nút Close -->
+            <div class="flex justify-center mt-6">
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('resultScreen').classList.add('hidden')">
+                    Close
+                </button>
+            </div>
         </div>
     </div>
     <div>
@@ -33,7 +48,7 @@
             id="postForm"
             method="post"
             enctype="multipart/form-data"
-            action="{% url 'calculate-viral-potential' %}"
+            action="{% url 'calculate-entropy' %}"
             class="space-y-5"
         >
             {% csrf_token %}
@@ -49,20 +64,10 @@
                                     type="text"
                                     name="paragraph"
                                     class="form-input"
+                                    rows="20"
                                 ></textarea>
                             </div>
                         </div>
-                        <!-- <div>
-                            <label class="mt-2" for="reference_entropy">Reference Entropy</label>
-                            <div class="flex items-center gap-2">
-                                <textarea
-                                    id="reference_entropy"
-                                    type="text"
-                                    name="reference_entropy"
-                                    class="form-input"
-                                ></textarea>
-                            </div>
-                        </div> -->
                     </div>
                 </div>
                 </div>
@@ -94,32 +99,109 @@
     function submitForm(event) {
         const postForm = document.getElementById('postForm');
         event.preventDefault();
-        
+
         formData = new FormData(postForm);
         fetch(postForm.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': '{{ csrf_token }}'
-        }
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
         })
         .then(response => response.json())
         .then(data => {
             showMessage(data.message, data.status);
             if (data.status === 'success') {
-                console.log(data);
                 document.getElementById('resultScreen').classList.remove('hidden');
-                for (const [key, value] of Object.entries(data.result)) {
-                    console.log(key, value);
-                }
+                renderResults(data.result);
             }
         })
         .catch(error => {
             console.error('Error:', error);
             showMessage('Submit failed', 'error');
         });
-        
+    }
+
+    function renderResults(result) {
+        const finalEntropyEl = document.getElementById('final_semantic_entropy');
+        const tabsContainer = document.getElementById('tabsContainer');
+        const tabContents = document.getElementById('tabContents');
+
+        tabsContainer.innerHTML = "";
+        tabContents.innerHTML = "";
+
+        finalEntropyEl.textContent = result?.final_semantic_entropy;
+
+        const details = result?.detail_results || [];
+        if (details.length === 0) {
+            tabContents.innerHTML = "<div>No paragraphs detected.</div>";
+            return;
+        }
+
+        // Generate tabs dynamically
+        details.forEach((detail, index) => {
+            const tabBtn = document.createElement('button');
+            tabBtn.textContent = `Paragraph ${detail.paragraph_index}`;
+            tabBtn.classList.add('px-4', 'py-2', 'rounded-t', 'hover:bg-gray-100', 'hover:text-black', 'transition');
+            if (index === 0) tabBtn.classList.add('bg-black', 'text-white');
+            tabBtn.onclick = () => showTab(index);  
+            tabsContainer.appendChild(tabBtn);
+
+            // Tab content
+            const contentDiv = document.createElement('div');
+            contentDiv.id = `tab-content-${index}`;
+            contentDiv.classList.add('hidden', 'border', 'p-4', 'rounded-b', 'bg-gray-50');
+            if (index === 0) contentDiv.classList.remove('hidden');
+
+            const clustersHTML = renderClusters(detail?.clusters);
+
+            contentDiv.innerHTML = `
+                <div class="mb-2"><span class="font-bold">Semantic entropy:</span> ${detail?.semantic_entropy}</div>
+                <div class="mb-2"><span class="font-bold">Calculate semantic entropy:</span> ${detail?.calculate_semantic_entropy}</div>
+                <div class="mb-2"><span class="font-bold">Normalized entropy:</span> ${detail?.normalized_entropy}</div>
+                <div class="mb-2"><span class="font-bold">Number of sentences:</span> ${detail?.num_sentences}</div>
+                ${clustersHTML}
+                <div class="mb-2"><span class="font-bold">Explanation:</span> ${detail?.explanation}</div>
+            `;
+            tabContents.appendChild(contentDiv);
+        });
+    }
+
+    function showTab(activeIndex) {
+        const tabs = document.querySelectorAll('#tabsContainer button');
+        const contents = document.querySelectorAll('#tabContents > div');
+        tabs.forEach((tab, i) => {
+            if (i === activeIndex) {
+                tab.classList.add('bg-black', 'text-white');
+                tab.classList.remove('bg-gray-200');
+                contents[i].classList.remove('hidden');
+            } else {
+                tab.classList.remove('bg-black', 'text-white');
+                tab.classList.add('bg-gray-200');
+                contents[i].classList.add('hidden');
+            }
+        });
+    }
+
+    function renderClusters(clusters) {
+        if (!clusters) return `<div class="mb-2"><span class="font-bold">Clusters:</span> N/A</div>`;
+
+        let html = `<div class="mb-2"><div class="font-bold">Clusters:</div><div class="space-y-2 mt-2 text-sm text-gray-700">`;
+        for (const [key, cluster] of Object.entries(clusters)) {
+            html += `
+            <div class="border p-2 rounded bg-white shadow-sm">
+                <div class="font-semibold text-indigo-600 mb-1">${key.replace('_', ' ').toUpperCase()}</div>
+                <div><span class="font-medium">Keywords:</span> ${cluster.keywords.join(', ')}</div>
+                <div class="mt-1"><span class="font-medium">Sentences:</span>
+                    <ul class="ml-5">
+                        ${cluster.sentences.map(s => `<li>${s}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>`;
+        }
+        html += `</div></div>`;
+        return html;
     }
 </script>
 {% endblock %}
