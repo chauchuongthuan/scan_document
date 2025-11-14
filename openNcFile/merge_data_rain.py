@@ -19,7 +19,7 @@ def detect_cols(df):
             lon_cols[0] if lon_cols else None,
             precip_cols[0] if precip_cols else None)
 
-def merge_filtered_to_postgres(folder, table_name="rain_lamdong", chunksize=100000):
+def merge_filtered_to_postgres(folder, table_name="rain_precip", chunksize=100000):
     """
     Gộp các file filtered_*.csv trong folder vào PostgreSQL table.
     Tự loại trùng (date, lat, lon) nhờ PRIMARY KEY.
@@ -118,7 +118,7 @@ def merge_filtered_to_postgres(folder, table_name="rain_lamdong", chunksize=1000
     print("🎯 Gộp dữ liệu hoàn tất. Chuẩn bị xuất ra CSV...")
 
     # Xuất ra file CSV kết quả
-    out_csv = os.path.join(folder, "rain_Lam_Dong_2015_2025.csv")
+    out_csv = os.path.join(folder, "rain_Dak_Nong_2015_2025.csv")
     with engine.connect() as conn, open(out_csv, "w", encoding="utf-8") as fout:
         fout.write("date,latitude,longitude,precip\n")
         for chunk in pd.read_sql(text(f"SELECT date, latitude, longitude, precip FROM {table_name} ORDER BY date, latitude, longitude"), conn, chunksize=100000):

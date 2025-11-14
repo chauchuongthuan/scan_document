@@ -14,7 +14,7 @@ def download_chirps_pentad_split5(
     """
     Tải dữ liệu CHIRPS Pentad theo 5 phần mỗi năm (để tránh lỗi 500 hoặc treo máy).
     """
-
+    message = ""
     base_url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/chirps20GlobalPentadP05_Lon0360.csv?"
     
     # Định nghĩa 5 phần mỗi năm
@@ -50,6 +50,7 @@ def download_chirps_pentad_split5(
 
             if os.path.exists(filepath):
                 print(f"✅ Bỏ qua {filename} (đã tồn tại)")
+                message += f"✅ Bỏ qua {filename} (đã tồn tại)\n"
                 continue
 
             print(f"⬇️  Đang tải {filename} ...")
@@ -57,18 +58,23 @@ def download_chirps_pentad_split5(
                 response = requests.get(url, timeout=300)
                 if response.status_code != 200:
                     print(f"⚠️  Lỗi {response.status_code} cho {filename}, bỏ qua.")
+                    message += f"⚠️  Lỗi {response.status_code} cho {filename}, bỏ qua.\n"
                     continue
 
                 with open(filepath, "wb") as f:
                     f.write(response.content)
 
                 print(f"✅ Hoàn tất: {filename} ({len(response.content)/1e6:.2f} MB)")
+                message += f"✅ Hoàn tất: {filename} ({len(response.content)/1e6:.2f} MB)\n"
 
             except Exception as e:
                 print(f"❌ Lỗi khi tải {filename}: {e}")
+                message += f"❌ Lỗi khi tải {filename}: {e}\n"
                 continue
-
+            
     print("\n🎯 Tải xong toàn bộ dữ liệu!")
+    message += "\n🎯 Tải xong toàn bộ dữ liệu!\n"
+    return message
 
 # ================================
 # 🧭 Gọi hàm ví dụ:

@@ -5,7 +5,7 @@ import pytesseract
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+MARKET_AGENT_DATA_DIR = os.path.join(BASE_DIR, 'market_agent_data')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -23,7 +23,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://0.0.0.0:7070',
     'http://localhost:7070',
-    'https://scandocumentdo.nodeappplus.site',
 ]
 
 # Cấu hình Tesseract cho Linux (Docker)
@@ -48,6 +47,8 @@ INSTALLED_APPS = [
     "keywords",
     "entropyCalculator",
     "openNcFile",
+    "marketAgent",
+    "openGapCalculator",
 ]
 
 MIDDLEWARE = [

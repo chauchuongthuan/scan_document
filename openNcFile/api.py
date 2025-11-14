@@ -9,8 +9,7 @@ from rest_framework import status
 from django.db import transaction
 from .models import RainPrecip
 from django.conf import settings
-
-
+from .download_file import download_chirps_pentad_split5
 class RainPrecipView(APIView):
     def post(self, request):
         """
@@ -184,4 +183,36 @@ class ExportRainPrecipView(APIView):
             return Response({
                 "success": False,
                 "message": f"Lỗi khi xuất dữ liệu: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DownLoadFileFromCoastwWatch(APIView):
+    def post(self, request):
+        try:
+            save_dir = request.data.get("save_dir")
+            lat_min = request.data.get("lat_min")
+            lat_max = request.data.get("lat_max")
+            lon_min = request.data.get("lon_min")
+            lon_max = request.data.get("lon_max")
+            start_year = request.data.get("start_year")
+            end_year = request.data.get("end_year")
+
+            final_message = download_chirps_pentad_split5(save_dir, lat_min, lat_max, lon_min, lon_max, start_year, end_year)
+
+            if not lat_min or not lat_max or not lon_min or not lon_max or not start_year or not end_year or not save_dir:
+                return Response({
+                    "success": False,
+                    "message": "Thiếu tham số."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+            return Response({
+                "success": True,
+                "message": final_message,
+            }, status=status.HTTP_200_OK)
+            
+            
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": f"Lỗi khi tải file từ CoastWatch: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
