@@ -113,7 +113,7 @@ class CreatePromptView(View):
                 
                 # Prepare price data for the prompt
                 price_context = """
-                    You are a professional financial analyst for the coffee commodity market. Your task is to analyze the daily report below.
+                    You are a professional financial analyst for the coffee commodity market. Your task is to analyze the daily report or article below.
                     You MUST follow the rules below and return a JSON CODE BLOCK, without any other text.
 
                     ANALYSIS RULES

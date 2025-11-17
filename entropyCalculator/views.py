@@ -44,7 +44,7 @@ class CalculateEntropyByEachParagraphView(View):
                         results.append({
                             "paragraph_index": idx,
                             "semantic_entropy": 1.0,
-                            "calculate_semantic_entropy": 1.0 * 4 * math.pi * 2 * 0.72,
+                            "calculate_semantic_entropy": 1.0 * math.pi * 2 * 0.72,
                             "normalized_entropy": 1.0,
                             "num_sentences": len(sentences),
                             "clusters": None,
@@ -98,7 +98,7 @@ class CalculateEntropyByEachParagraphView(View):
                     results.append({
                         "paragraph_index": idx,
                         "semantic_entropy": float(entropy),
-                        "calculate_semantic_entropy": float(entropy) * 4 * math.pi * 2 * 0.72,
+                        "calculate_semantic_entropy": float(entropy) * math.pi * 2 * 0.72,
                         "normalized_entropy": float(normalized_entropy),
                         "num_sentences": len(sentences),
                         "clusters": cluster_keywords,
@@ -187,7 +187,7 @@ class CalculateEntropyAllParagraphView(View):
                     "message": "Calculate successfully!",
                     "result": {
                         "semantic_entropy": float(entropy),
-                        "calculate_semantic_entropy": float(entropy) * 4 * math.pi * 2 * 0.72,
+                        "calculate_semantic_entropy": float(entropy) * math.pi * 2 * 0.72,
                         "normalized_entropy": float(normalized_entropy),
                         "num_sentences": len(sentences),
                         "clusters": cluster_keywords,
@@ -209,7 +209,7 @@ class CalculateEntropyByEachParagraphViewV2(View):
         if request.method == 'POST':
             try:
                 max_clusters = 5
-                scale_factor = 4 * math.pi * 2 * 0.72
+                scale_factor = math.pi * 2 * 0.72
                 text = request.POST.get('paragraph', '')
 
                 if not text or len(text.strip()) < 5:
