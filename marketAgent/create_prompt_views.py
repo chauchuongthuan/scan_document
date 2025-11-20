@@ -3,13 +3,14 @@ from google import genai
 from django.http import JsonResponse
 from django.views import View
 import re
+import os
 from datetime import datetime, timedelta
 from .models import DailyMarketPrice
 from .market_agent_utils import (
     safe_float,
     convert_json_string_to_object
 )
-client = genai.Client(api_key="AIzaSyA46hJwJsxpkB-a78FG2j9ryeB4OZ4RbjE")
+client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
 def build_system_prompt():
     """
