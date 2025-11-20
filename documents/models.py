@@ -1,7 +1,4 @@
 from django.db import models
-from mptt.models import MPTTModel, TreeForeignKey
-from django.utils.text import slugify
-from django.urls import reverse
 from uuid import uuid4
 class Document(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)

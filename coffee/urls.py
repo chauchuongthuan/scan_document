@@ -31,6 +31,11 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/cms/login/')),
 
     path('documents/', include('documents.urls')),
+    path('keywords/', include('keywords.urls')),
+    path('entropy-calculator/', include('entropyCalculator.urls')),
+    path('open-nc-file/', include('openNcFile.urls')),
+    path('market-agent/', include('marketAgent.urls')),
+    path('open-gap-calculator/', include('openGapCalculator.urls')),
 
     # AUTH CMS
     path('cms/login/', LoginView.as_view(), name='login_cms'),

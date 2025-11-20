@@ -1,0 +1,129 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'components/common/confirm_modal.html' %}
+<script src="{% static 'js/confirm_modal.js' %}"></script>
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+    </ol>
+    <div class="panel">
+    <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
+        Search by keyword
+    </h5>
+    <!-- Result Screen -->
+    <div id="resultScreen" class="hidden fixed inset-0 bg-black/60 flex items-start justify-center z-50 w-full h-full overflow-y-auto py-10">
+        <div class="bg-white p-6 rounded-lg w-4/5 max-h-[90vh] overflow-y-auto">
+            <div class="mb-4">
+                <div class="mb-2 text-lg font-bold text-black">
+                    List of news: <span id="list_of_news"></span>
+                </div>
+            </div>
+
+            <!-- Nút Close -->
+            <div class="flex justify-center mt-6">
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('resultScreen').classList.add('hidden')">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <div>
+        <form
+            id="postForm"
+            method="post"
+            enctype="multipart/form-data"
+            action="{% url 'afr-search' %}"
+            class="space-y-5"
+        >
+            {% csrf_token %}
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="w-full space-y-6">
+                    <!-- Comco ref, Buyer ref, Contract date, Price -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="mt-2" for="keyword">Keyword</label>
+                            <div class="flex items-center gap-2">
+                                <input
+                                    id="keyword"
+                                    type="text"
+                                    name="keyword"
+                                    class="form-input"
+                                ></input>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            <div class="mt-6 flex justify-end">
+            <button type="submit" onclick="submitForm(event)" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+<script>
+    function showMessage(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function submitForm(event) {
+        const postForm = document.getElementById('postForm');
+        event.preventDefault();
+
+        formData = new FormData(postForm);
+        fetch(postForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage(data.message, data.status);
+            if (data.status === 'success') {
+                document.getElementById('resultScreen').classList.remove('hidden');
+                if(data?.result?.articles?.length > 0) {
+                    renderResults(data.result.articles);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Submit failed', 'error');
+        });
+    }
+
+    function renderResults(result) {
+        const list_of_news = document.getElementById('list_of_news');
+        list_of_news.innerHTML = "";
+        result.forEach((item) => {
+            const div = document.createElement('div');
+            div.classList.add('mb-2');
+            div.innerHTML = `<div>${item.title}</div>
+            <div>${item.link}</div>`;
+            list_of_news.appendChild(div);
+        });
+    }
+</script>
+{% endblock %}

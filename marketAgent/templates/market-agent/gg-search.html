@@ -1,0 +1,103 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto mt-10 p-5">
+    <h2 class="text-2xl font-bold mb-6">Tin tức Thiên Tai (24h qua)</h2>
+
+    <div id="tabsContainer" class="flex border-b border-gray-300 mb-4 overflow-x-auto">
+    </div>
+
+    <div id="tabContents">
+    </div>
+</div>
+
+<script>
+    // 1. Lấy dữ liệu từ Django và chuyển thành JSON Object
+    // Filter |safe là bắt buộc để Django không mã hóa ký tự đặc biệt
+    const details = {{ results|safe }};
+
+    function renderResults() {
+        const tabsContainer = document.getElementById('tabsContainer');
+        const tabContents = document.getElementById('tabContents');
+
+        tabsContainer.innerHTML = "";
+        tabContents.innerHTML = "";
+
+        if (!details || details.length === 0) {
+            tabContents.innerHTML = "<div class='text-gray-500'>Không có dữ liệu.</div>";
+            return;
+        }
+
+        // Generate Tabs và Content động
+        details.forEach((detail, index) => {
+            // --- A. TẠO BUTTON TAB ---
+            const tabBtn = document.createElement('button');
+            tabBtn.textContent = detail.keyword;
+            tabBtn.id = `tab-btn-${index}`;
+            // Style cơ bản (chưa active)
+            tabBtn.className = 'px-4 py-2 mr-2 rounded-t font-medium transition duration-300 border-b-2 border-transparent hover:bg-gray-100 whitespace-nowrap';
+            
+            // Xử lý click
+            tabBtn.onclick = () => showTab(index);  
+            tabsContainer.appendChild(tabBtn);
+
+            // --- B. TẠO NỘI DUNG TAB (DANH SÁCH TIN TỨC) ---
+            const contentDiv = document.createElement('div');
+            contentDiv.id = `tab-content-${index}`;
+            contentDiv.className = 'hidden'; // Mặc định ẩn hết
+
+            // Tạo HTML cho danh sách bài viết trong từ khóa này
+            let articlesHtml = '';
+            if (detail.articles && detail.articles.length > 0) {
+                articlesHtml = `<div class="grid gap-4">`;
+                detail.articles.forEach(article => {
+                    // Có thể tùy chỉnh giao diện từng bài báo tại đây
+                    articlesHtml += `
+                        <div class="bg-white p-4 rounded shadow hover:shadow-md transition border border-gray-200">
+                            <a href="${article.link}" target="_blank" class="text-lg font-semibold text-blue-700 hover:underline">
+                                ${article.title}
+                            </a>
+                            <div class="text-sm text-gray-600 mt-2">${article.snippet}</div>
+                        </div>
+                    `;
+                });
+                articlesHtml += `</div>`;
+            } else {
+                articlesHtml = `<div class="text-gray-500 italic">Không tìm thấy tin mới cho từ khóa này.</div>`;
+            }
+
+            contentDiv.innerHTML = articlesHtml;
+            tabContents.appendChild(contentDiv);
+        });
+
+        // Mặc định hiển thị tab đầu tiên sau khi render xong
+        if (details.length > 0) {
+            showTab(0);
+        }
+    }
+
+    // Hàm chuyển đổi Tab
+    function showTab(selectedIndex) {
+        details.forEach((_, index) => {
+            const content = document.getElementById(`tab-content-${index}`);
+            const btn = document.getElementById(`tab-btn-${index}`);
+
+            if (index === selectedIndex) {
+                // Tab đang chọn: Hiển thị nội dung, đổi màu nút thành Đen
+                content.classList.remove('hidden');
+                btn.classList.add('bg-black', 'text-white', 'border-black');
+                btn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+            } else {
+                // Tab ẩn: Ẩn nội dung, style nút về mặc định
+                content.classList.add('hidden');
+                btn.classList.remove('bg-black', 'text-white', 'border-black');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-100');
+            }
+        });
+    }
+
+    // Chạy hàm render khi trang tải xong
+    document.addEventListener('DOMContentLoaded', renderResults);
+</script>
+{% endblock content %}

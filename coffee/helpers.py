@@ -225,3 +225,20 @@ def parse_contract_date(date_str):
             return None
     except Exception:
         return None
+
+# def split_sentences(text):
+#     """
+#     Tách câu dựa trên dấu chấm, chấm hỏi, chấm than hoặc xuống dòng.
+#     Không tách giữa số (vd: 3.75), nhưng vẫn tách nếu chấm kết thúc câu (vd: EP.4.)
+#     """
+#     # tách tại dấu chấm / ! / ? / ; khi sau đó là khoảng trắng + chữ hoa HOẶC hết chuỗi
+#     pattern = r'(?<!\d)\.(?=\s+[A-Z]|$)|[!?;]|\n+'
+#     parts = re.split(pattern, text)
+#     sentences = [s.strip() for s in parts if len(s.strip()) > 5]
+#     return sentences
+
+def split_sentences(text):
+    """Tách câu dựa trên dấu chấm, chấm phẩy, xuống dòng."""
+    sentences = re.split(r'[.\n;!?]+', text)
+    sentences = [s.strip() for s in sentences if len(s.strip()) > 5]
+    return sentences
