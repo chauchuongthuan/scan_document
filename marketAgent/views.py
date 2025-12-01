@@ -10,7 +10,7 @@ import os
 import re
 import math
 import nltk
-from nltk.tokenize import sent_tokenize
+# from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import logging # Thêm logging để theo dõi lỗi
@@ -207,16 +207,15 @@ class SearchGGView(View):
         cx = os.environ.get('CX_GG_SEARCH')
         url = "https://www.googleapis.com/customsearch/v1"
         keywords_query = [
-            'tin tức thiên tai tây nguyên mới nhất', 
-            'thiên tai Gia Lai mới nhất', 
-            'thiên tai dak lak mới nhất', 
-            'thiên tai dak nong mới nhất',
-            'lũ lụt mới nhất',
-            'thuế mới nhất',
-            # "coffee",
-            # "tariff",
-            # "Trump",
-            # "eudr"
+            # 'thiên tai tây nguyên mới nhất', 
+            # 'thiên tai Gia Lai mới nhất', 
+            # 'thiên tai dak lak mới nhất', 
+            # 'thiên tai dak nong mới nhất',
+            # 'lũ lụt mới nhất',
+            # 'tin tức cà phê hôm nay',
+            'reuters coffee',
+            'tin tức thiên tai tây nguyên hôm nay',
+            'tin tức cà phê hôm nay'
         ]
         
         final_data = []

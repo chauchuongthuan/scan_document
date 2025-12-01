@@ -182,16 +182,16 @@ class CreatePromptView(View):
                     }
                     ]
                 """
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=content,
-                )
+                # response = client.models.generate_content(
+                #     model="gemini-2.5-flash",
+                #     contents=content,
+                # )
                 return JsonResponse({
                     "status": "success",
                     "message": "Created successfully",
                     "result": {
-                        "ai_response": response.text,
-                        # "ai_response": "",
+                        # "ai_response": response.text,
+                        "ai_response": "",
                         "prompt_used": content
                     }
                 }, status=200)
