@@ -25,7 +25,7 @@ class LoginView(View):
                 # if user.is_superuser:
                 if user.is_active:
                     login(request, user)
-                    return redirect('document-list')
+                    return redirect('get-datafeed')
                 else:
                     messages.error(request, 'You do not have permissions')
             else:

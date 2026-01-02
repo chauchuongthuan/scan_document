@@ -1,0 +1,584 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'components/common/confirm_modal.html' %}
+<script src="{% static 'js/confirm_modal.js' %}"></script>
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Dự đoán biến động giá HÔM NAY</a></li>
+    </ol>
+    <div class="panel">
+        <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
+            Dự đoán biến động giá cho NGÀY HÔM NAY
+        </h5>
+        
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="hidden fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 w-full h-full">
+            <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span class="text-lg font-medium">Đang xử lý...</span>
+            </div>
+        </div>
+        
+        <div>
+            <form id="predictForm" method="post" enctype="multipart/form-data" class="space-y-5">
+                {% csrf_token %}
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="w-full space-y-6">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="mt-2" for="entropy_score">Entropy Score của bản tin HÔM NAY (0-1)</label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        id="entropy_score"
+                                        type="number"
+                                        name="entropy_score"
+                                        class="form-input"
+                                        step="0.01"
+                                        min="0"
+                                        max="1"
+                                        placeholder="0.65"
+                                        value="0.65"
+                                        required
+                                    >
+                                    <span class="text-xs text-gray-500">0: tin đơn giản, 1: tin rất phức tạp</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="mt-2 mb-3 block">Upload file dữ liệu thị trường (đến NGÀY HÔM QUA)</label>
+                                <div class="flex items-center justify-center w-full">
+                                    <label for="excel_file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                            </svg>
+                                            <p id="filePreviewName" class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                                <span class="font-semibold">Click để upload file</span>
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">Excel (.xlsx, .xls) hoặc CSV (.csv)</p>
+                                        </div>
+                                        <input id="excel_file" name="excel_file" type="file" class="hidden" accept=".xlsx,.xls,.csv" required>
+                                    </label>
+                                </div>
+                                <div id="fileNameDisplay" class="mt-2 text-sm text-green-600 hidden">
+                                    <span class="font-medium">File đã chọn: </span><span id="selectedFileName"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex gap-4">
+                            <button type="button" onclick="predictTodayMarket()" class="btn btn-primary">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                Dự đoán cho HÔM NAY
+                            </button>
+                            <button type="button" onclick="getMarketData()" class="btn btn-secondary">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                Kiểm tra dữ liệu
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-1/3">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <h6 class="font-bold text-blue-700 dark:text-blue-300 mb-2">📊 Hướng dẫn sử dụng:</h6>
+                            <ul class="text-sm space-y-2">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 font-bold">1.</span>
+                                    <span>Nhập <strong>entropy score</strong> đã tính từ bản tin <strong>HÔM NAY</strong> (0-1)</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 font-bold">2.</span>
+                                    <span>Upload file Excel chứa dữ liệu giá <strong>đến NGÀY HÔM QUA</strong></span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 font-bold">3.</span>
+                                    <span>File cần có các cột: <strong>Date, Open, High, Low, Close</strong></span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 font-bold">4.</span>
+                                    <span>Nhấn <strong>"Dự đoán cho HÔM NAY"</strong> để xem kết quả</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 font-bold">5.</span>
+                                    <span>Nhấn <strong>"Kiểm tra dữ liệu"</strong> để xác nhận file đọc được</span>
+                                </li>
+                            </ul>
+                            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                <p class="text-xs"><strong>⚠️ Lưu ý quan trọng:</strong></p>
+                                <ul class="text-xs mt-1 space-y-1">
+                                    <li>• File phải chứa dữ liệu <strong>đến NGÀY HÔM QUA</strong></li>
+                                    <li>• Entropy score phải tính từ bản tin <strong>NGÀY HÔM NAY</strong></li>
+                                    <li>• Dự đoán sẽ dành cho <strong>NGÀY HÔM NAY</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Kết quả dự đoán -->
+            <div id="resultContainer" class="mt-8 hidden">
+                <div class="card">
+                    <div class="card-header flex justify-between items-center">
+                        <h5 class="text-lg font-bold">Kết quả dự đoán cho NGÀY HÔM NAY</h5>
+                        <span id="predictionDate" class="text-sm text-gray-500"></span>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultContent"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dữ liệu thị trường -->
+            <div id="marketDataContainer" class="mt-4 hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>📈 Dữ liệu thị trường từ file</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="marketDataContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showMessage(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+    
+    function showLoadingScreen() {
+        document.getElementById('loadingScreen').classList.remove('hidden');
+    }
+    
+    function hideLoadingScreen() {
+        document.getElementById('loadingScreen').classList.add('hidden');
+    }
+    
+    // Xử lý hiển thị tên file khi chọn
+    document.getElementById('excel_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || '';
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const selectedFileName = document.getElementById('selectedFileName');
+        
+        if (fileName) {
+            selectedFileName.textContent = fileName;
+            fileNameDisplay.classList.remove('hidden');
+        } else {
+            fileNameDisplay.classList.add('hidden');
+        }
+    });
+    
+    function predictTodayMarket() {
+        const entropyScore = document.getElementById('entropy_score').value;
+        const excelFile = document.getElementById('excel_file').files[0];
+        
+        if (!entropyScore) {
+            showMessage('Vui lòng nhập entropy score của bản tin hôm nay', 'error');
+            return;
+        }
+        
+        if (!excelFile) {
+            showMessage('Vui lòng chọn file dữ liệu thị trường', 'error');
+            return;
+        }
+        
+        showLoadingScreen();
+        
+        const formData = new FormData();
+        formData.append('entropy_score', entropyScore);
+        formData.append('excel_file', excelFile);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+        // Sử dụng API mới: PredictTodayMarketMoveView
+        fetch('{% url "predict-today" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoadingScreen();
+            
+            if (data.status === 'success') {
+                showMessage(data.message, data.status);
+                document.getElementById('resultContainer').classList.remove('hidden');
+                displayPredictionResult(data.result);
+            } else {
+                showMessage(data.message || 'Dự đoán thất bại', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoadingScreen();
+            console.error('Error:', error);
+            showMessage('Lỗi kết nối: ' + error.message, 'error');
+        });
+    }
+    
+    function getMarketData() {
+        const excelFile = document.getElementById('excel_file').files[0];
+        
+        if (!excelFile) {
+            showMessage('Vui lòng chọn file dữ liệu thị trường', 'error');
+            return;
+        }
+        
+        showLoadingScreen();
+        
+        const formData = new FormData();
+        formData.append('excel_file', excelFile);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+        // Sử dụng API mới: GetMarketDataView
+        fetch('{% url "get-market-data" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoadingScreen();
+            
+            if (data.status === 'success') {
+                showMessage(data.message, data.status);
+                document.getElementById('marketDataContainer').classList.remove('hidden');
+                displayMarketData(data.result);
+            } else {
+                showMessage(data.message || 'Lấy dữ liệu thất bại', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoadingScreen();
+            console.error('Error:', error);
+            showMessage('Lỗi kết nối: ' + error.message, 'error');
+        });
+    }
+    
+    function displayPredictionResult(result) {
+        const prediction = result.prediction;
+        const content = document.getElementById('resultContent');
+        const predictionDate = document.getElementById('predictionDate');
+        
+        // Cập nhật ngày dự đoán
+        if (predictionDate) {
+            predictionDate.textContent = `Ngày dự đoán: ${prediction.prediction_date}`;
+        }
+
+        let signalStrengthText = '';
+        let signalStrengthClass = '';
+        if (prediction.signal_strength >= 4) {
+            signalStrengthText = 'MẠNH';
+            signalStrengthClass = 'text-green-600';
+        } else if (prediction.signal_strength >= 2) {
+            signalStrengthText = 'TRUNG BÌNH';
+            signalStrengthClass = 'text-yellow-600';
+        } else if (prediction.signal_strength > 0) {
+            signalStrengthText = 'YẾU';
+            signalStrengthClass = 'text-orange-600';
+        } else {
+            signalStrengthText = 'KHÔNG RÕ RÀNG';
+            signalStrengthClass = 'text-gray-600';
+        }
+        
+        // Timeline hiển thị với cấu trúc mới
+        const timelineHtml = `
+            <div class="bg-white p-3 rounded-lg border border-gray-200 mt-3">
+                <div class="text-sm text-gray-500 mb-1">📡 Độ mạnh tín hiệu</div>
+                <div class="font-bold ${signalStrengthClass}">${signalStrengthText} (${prediction.signal_strength} điểm)</div>
+                <div class="text-xs text-gray-500 mt-1">
+                    Bullish: ${prediction.market_context.bullish_score} điểm | 
+                    Bearish: ${prediction.market_context.bearish_score} điểm
+                </div>
+            </div>
+            <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="text-center mb-4 md:mb-0">
+                        <div class="font-bold text-sm text-gray-600 mb-1">📅 Dữ liệu có sẵn (HÔM QUA)</div>
+                        <div class="text-xl font-bold text-gray-800">${prediction.last_data_date}</div>
+                        <div class="text-sm text-gray-600 mt-1">Giá đóng cửa: <span class="font-bold">${prediction.last_close_price.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-center my-4 md:my-0">
+                        <div class="text-3xl mx-2 text-blue-500">→</div>
+                        <div class="bg-blue-100 px-4 py-2 rounded-lg">
+                            <div class="text-xs text-blue-700 font-bold">ENTROPY HÔM NAY</div>
+                            <div class="text-lg font-bold text-blue-800">${result.entropy_score}</div>
+                        </div>
+                        <div class="text-3xl mx-2 text-blue-500">→</div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="font-bold text-sm text-gray-600 mb-1">🎯 Dự đoán (HÔM NAY)</div>
+                        <div class="text-xl font-bold text-blue-600">${prediction.prediction_date}</div>
+                        <div class="text-sm text-gray-600 mt-1">Dự đoán giá: <span class="font-bold">${prediction.predicted_price.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                    </div>
+                </div>
+                <div class="mt-3 text-sm text-gray-600 text-center">
+                    <strong>Nguồn entropy:</strong> ${result.entropy_source || "Bản tin tóm tắt thị trường NGÀY HÔM NAY"}
+                </div>
+            </div>
+        `;
+        
+        // Xác định màu sắc và icon dựa trên direction
+        let colorClass = 'text-gray-600';
+        let bgClass = 'bg-gray-100';
+        let icon = '➡️';
+        let actionColorClass = 'text-gray-700';
+        let actionBgClass = 'bg-gray-200';
+        
+        if (prediction.direction === 'bullish') {
+            colorClass = 'text-green-600';
+            bgClass = 'bg-green-50';
+            icon = '📈';
+            actionColorClass = 'text-green-700';
+            actionBgClass = 'bg-green-100';
+        } else if (prediction.direction === 'bearish') {
+            colorClass = 'text-red-600';
+            bgClass = 'bg-red-50';
+            icon = '📉';
+            actionColorClass = 'text-red-700';
+            actionBgClass = 'bg-red-100';
+        }
+        
+        // Xác định màu cho risk level
+        let riskColorClass = 'text-gray-700';
+        if (prediction.risk_level === 'CAO' || prediction.risk_level === 'TRUNG BÌNH CAO') {
+            riskColorClass = 'text-red-600';
+        } else if (prediction.risk_level === 'TRUNG BÌNH') {
+            riskColorClass = 'text-yellow-600';
+        } else if (prediction.risk_level === 'THẤP' || prediction.risk_level === 'RẤT THẤP') {
+            riskColorClass = 'text-green-600';
+        }
+        
+        const html = timelineHtml + `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Cột 1: Dự đoán chính -->
+                <div class="lg:col-span-2">
+                    <div class="${bgClass} p-5 rounded-lg border ${colorClass.replace('text-', 'border-')}/30">
+                        <h4 class="${colorClass} font-bold text-lg mb-4">${icon} ${prediction.direction.toUpperCase()}</h4>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-white p-4 rounded-lg shadow-sm">
+                                <div class="text-sm text-gray-500 mb-1">Biến động dự đoán</div>
+                                <div class="text-2xl font-bold ${prediction.predicted_change_percent > 0 ? 'text-[#22c55d]' : 'text-[#ef4444]'}">
+                                    ${prediction.predicted_change_percent > 0 ? '+' : ''}${prediction.predicted_change_percent.toFixed(2)}%
+                                </div>
+                                <div class="text-sm text-gray-500 mt-1">
+                                    ${prediction.predicted_move > 0 ? '+' : ''}${prediction.predicted_move.toFixed(2)} điểm
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-lg shadow-sm">
+                                <div class="text-sm text-gray-500 mb-1">Khuyến nghị hành động</div>
+                                <div class="text-2xl font-bold ${actionColorClass}">${prediction.action}</div>
+                                <div class="text-sm ${actionColorClass} mt-1">Dựa trên xu hướng dự đoán</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-3 rounded-lg">
+                                <div class="text-sm text-gray-500">Từ giá (hôm qua)</div>
+                                <div class="font-bold">${prediction.last_close_price.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            </div>
+                            
+                            <div class="bg-white p-3 rounded-lg">
+                                <div class="text-sm text-gray-500">Đến giá (dự đoán hôm nay)</div>
+                                <div class="font-bold">${prediction.predicted_price.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phân tích thị trường -->
+                    <div class="mt-6">
+                        <h6 class="font-bold mb-3 text-gray-700">📊 Phân tích thị trường (dựa trên dữ liệu đến ${prediction.last_data_date}):</h6>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-xs text-gray-500">Xu hướng 3 ngày</div>
+                                <div class="font-bold ${prediction.market_context.trend_3d > 0 ? 'text-green-600' : 'text-red-600'}">
+                                    ${prediction.market_context.trend_3d > 0 ? '+' : ''}${prediction.market_context.trend_3d.toFixed(2)}%
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-xs text-gray-500">Biến động 5 ngày</div>
+                                <div class="font-bold">${prediction.market_context.volatility_5d.toFixed(2)}%</div>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-xs text-gray-500">Hỗ trợ</div>
+                                <div class="font-bold text-blue-600">${prediction.market_context.support.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-xs text-gray-500">Kháng cự</div>
+                                <div class="font-bold text-blue-600">${prediction.market_context.resistance.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cột 2: Thông tin đánh giá -->
+                <div>
+                    <div class="bg-gradient-to-b from-gray-50 to-white p-5 rounded-lg border border-gray-200">
+                        <h6 class="font-bold mb-4 text-gray-700">📋 Đánh giá dự đoán</h6>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">Độ tin cậy</div>
+                                <div class="flex items-center">
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                        <div class="bg-green-600 h-2.5 rounded-full" style="width: ${prediction.confidence * 100}%"></div>
+                                    </div>
+                                    <span class="font-bold text-lg">${(prediction.confidence * 100).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">Mức rủi ro</div>
+                                <div class="${riskColorClass} font-bold text-lg">${prediction.risk_level}</div>
+                            </div>
+                            
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">Ảnh hưởng của entropy</div>
+                                <div class="text-lg font-bold text-purple-600">${prediction.entropy_impact}%</div>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-gray-200">
+                                <div class="text-xs text-gray-500 mb-2">📝 Ghi chú:</div>
+                                <p class="text-sm text-gray-600">
+                                    ${result.data_context.note || "Dự đoán biến động cho ngày hôm nay dựa trên entropy của bản tin hôm nay và dữ liệu giá đến hôm qua"}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        content.innerHTML = html;
+    }
+    
+    function displayMarketData(result) {
+        const marketData = result.market_data;
+        const analysis = result.analysis;
+        const content = document.getElementById('marketDataContent');
+        
+        // Nếu có lỗi
+        if (marketData.error) {
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <strong>Lỗi đọc file:</strong> ${marketData.error}
+                </div>
+                <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                    <p class="font-bold mb-2">Vui lòng kiểm tra:</p>
+                    <ul class="list-disc pl-5 text-sm space-y-1">
+                        <li>Định dạng file (.xlsx, .xls, .csv)</li>
+                        <li>Cấu trúc file có đúng không</li>
+                        <li>Các cột bắt buộc: <strong>Date, Open, High, Low, Close</strong></li>
+                        <li>File có chứa dữ liệu đến NGÀY HÔM QUA</li>
+                    </ul>
+                </div>
+            `;
+            return;
+        }
+        
+        const html = `
+            <div class="overflow-x-auto">
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="bg-gray-100 font-bold">📅 Ngày dữ liệu</th>
+                        <td class="font-bold">${marketData.date}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Mở cửa</th>
+                        <td>${marketData.open.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Đóng cửa</th>
+                        <td>${marketData.close.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                    <tr class="${analysis.is_up ? 'bg-green-50' : 'bg-red-50'}">
+                        <th class="${analysis.is_up ? 'text-green-700 font-bold' : 'text-red-700 font-bold'}">Biến động</th>
+                        <td class="${analysis.is_up ? 'text-green-700 font-bold' : 'text-red-700 font-bold'}">
+                            ${analysis.daily_change > 0 ? '📈 +' : '📉 '}${analysis.daily_change.toFixed(2)} 
+                            (${analysis.daily_change_pct > 0 ? '+' : ''}${analysis.daily_change_pct.toFixed(2)}%)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Cao nhất</th>
+                        <td>${marketData.high.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Thấp nhất</th>
+                        <td>${marketData.low.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Khoảng giá (Range)</th>
+                        <td>${(marketData.high - marketData.low).toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} 
+                            (${analysis.range_percent.toFixed(2)}%)</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Giá đóng cửa hôm trước</th>
+                        <td>${marketData.prev_close.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Khối lượng</th>
+                        <td>${marketData.volume ? marketData.volume.toLocaleString('vi-VN') : 'N/A'}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Ngày dữ liệu trước</th>
+                        <td>${marketData.prev_date}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-gray-100">Tổng số ngày dữ liệu</th>
+                        <td>${marketData.total_days}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
+                <p class="text-sm text-blue-800">
+                    <strong>✅ File dữ liệu đã được đọc thành công!</strong><br>
+                    Dữ liệu này sẽ được sử dụng để dự đoán biến động cho NGÀY HÔM NAY.
+                </p>
+                <p class="text-xs text-gray-600 mt-2">
+                    <strong>Lưu ý:</strong> Đảm bảo file chứa dữ liệu đến NGÀY HÔM QUA (${marketData.date}). 
+                    Entropy score phải được tính từ bản tin NGÀY HÔM NAY.
+                </p>
+            </div>
+        `;
+        
+        content.innerHTML = html;
+    }
+</script>
+{% endblock %}

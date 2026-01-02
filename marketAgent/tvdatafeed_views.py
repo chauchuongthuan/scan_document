@@ -11,6 +11,11 @@ import pandas as pd
 from django.shortcuts import render
 from tvDatafeed import TvDatafeed, Interval
 tv = TvDatafeed()
+import datetime
+import math
+from chartOHLC.models import OHLCDataKC, OHLCDataRC
+from django.utils import timezone # Import thư viện timezone của Django
+import pytz
 
 class TVGetDatafeedView(View):
     @login_required(login_url="login_cms")
@@ -18,29 +23,61 @@ class TVGetDatafeedView(View):
         if request.method == 'POST':
             try:
                 symbol_text = request.POST.get('symbol', '')
+                n_bars_input = request.POST.get('n_bars', 10000)
+                interval_input_text = request.POST.get('interval', '')
                 if symbol_text == "":
                     return JsonResponse({
                         "status": "error",
                         "message": "Symbol is required"
                     }, status=400)
                 
-                if symbol_text == "KCH2026":
+                if interval_input_text == "in_daily":
+                    interval_input = Interval.in_daily
+                elif interval_input_text == "in_1_minute":
+                    interval_input = Interval.in_1_minute
+
+                if symbol_text == "KCH2026": # Cuối tháng 1 đổi sang KCK
                     exchange_text = "ICEUS"
-                elif symbol_text == "RCF2026":
+                elif symbol_text == "RCH2026":
                     exchange_text = "ICEEUR"
                 else:
-                    return JsonResponse({
-                        "status": "error",
-                        "message": "Exchange is required"
-                    }, status=400)
+                    exchange_text = "ICEUS"
+
                 df = tv.get_hist(
                     symbol=symbol_text,
                     exchange=exchange_text,
-                    interval=Interval.in_1_minute,
-                    n_bars=100000
+                    interval=interval_input,
+                    n_bars=int(n_bars_input)
                 )
+                
                 print(df)
-                output_file = f"data_{symbol_text}.xlsx"
+                # if df is not None:
+                #     df = df.reset_index()
+                #     for _, row in df.iterrows():
+                #         naive_dt = row['datetime']
+                #         timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh'))
+                #         if symbol_text == "KCH2026":
+                #             OHLCDataKC.objects.update_or_create(
+                #                 symbol=symbol_text,
+                #                 timestamp=timezone_dt,
+                #                 defaults={
+                #                     'open': row['open'], 'high': row['high'],
+                #                     'low': row['low'], 'close': row['close'],
+                #                     'volume': row['volume']
+                #                 }
+                #             )
+                #         elif symbol_text == "RCH2026":
+                #             OHLCDataRC.objects.update_or_create(
+                #                 symbol=symbol_text,
+                #                 timestamp=timezone_dt,
+                #                 defaults={
+                #                     'open': row['open'], 'high': row['high'],
+                #                     'low': row['low'], 'close': row['close'],
+                #                     'volume': row['volume']
+                #                 }
+                #             )
+                        
+                output_file = f"data_{symbol_text}_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')}.xlsx"
                 output_path = os.path.join(settings.MEDIA_ROOT, 'tvdatafeed', output_file)
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 df.to_excel(output_path)
@@ -62,26 +99,32 @@ class TVUnfilledGapView(View):
         if request.method == 'POST':
             try:
                 symbol_text = request.POST.get('symbol', '')
+                n_bars_input = request.POST.get('n_bars', 10000)
+                interval_input_text = request.POST.get('interval', '')
+
+                if interval_input_text == "in_daily":
+                    interval_input = Interval.in_daily
+                elif interval_input_text == "in_1_minute":
+                    interval_input = Interval.in_1_minute
+                    
                 if symbol_text == "":
                     return JsonResponse({
                         "status": "error",
                         "message": "Symbol is required"
                     }, status=400)
                 
-                if symbol_text == "KCH2026":
+                if symbol_text == "KCH2026": # Cuối tháng 1 đổi sang KCK
                     exchange_text = "ICEUS"
-                elif symbol_text == "RCF2026":
+                elif symbol_text == "RCH2026":
                     exchange_text = "ICEEUR"
                 else:
-                    return JsonResponse({
-                        "status": "error",
-                        "message": "Exchange is required"
-                    }, status=400)
+                    exchange_text = "ICEUS"
+                
                 df = tv.get_hist(
                     symbol=symbol_text,
                     exchange=exchange_text,
-                    interval=Interval.in_1_minute,
-                    n_bars=100000
+                    interval=interval_input,
+                    n_bars=int(n_bars_input)
                 )
                 gaps = []
                 
@@ -123,14 +166,12 @@ class TVUnfilledGapView(View):
                     high = g["gap_high"]
                     future = df[df["datetime"] > g["time"]]
 
-                    for _, row in future.iterrows():
-                        if row["low"] <= high and row["high"] >= low:
-                            g["filled"] = True
-                            break
+                    filled = is_gap_filled_by_intervals(low, high, future)
+                    g["filled"] = bool(filled)
                 
                 unfilled = [g for g in gaps if g["filled"] == False]
                 unfilled_gaps = pd.DataFrame(unfilled)
-                output_file = f"unfilled_gaps_{symbol_text}.xlsx"
+                output_file = f"unfilled_gaps_{symbol_text}_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')}.xlsx"
                 output_path = os.path.join(settings.MEDIA_ROOT, 'tvdatafeed', output_file)
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 unfilled_gaps.to_excel(output_path, index=False)
@@ -145,3 +186,54 @@ class TVUnfilledGapView(View):
                     "message": f"Get data failed: {str(e)}"
                 }, status=500)
         return render(request, 'market-agent/get-datafeed-gap.html')
+
+def is_gap_filled_by_intervals(gap_low, gap_high, future_df):
+    """
+    Kiểm tra gap đã fill hoàn toàn bằng union của intervals future.
+    Đã tối ưu hiệu năng: không dùng iterrows, dùng numpy + merge intervals nhanh.
+    """
+
+    if future_df.empty:
+        return False
+
+    # Dùng numpy nhanh hơn nhiều
+    lows = future_df['low'].to_numpy(dtype=float)
+    highs = future_df['high'].to_numpy(dtype=float)
+
+    # Loại bỏ NaN
+    mask = ~np.isnan(lows) & ~np.isnan(highs)
+    lows = lows[mask]
+    highs = highs[mask]
+
+    if len(lows) == 0:
+        return False
+
+    # Normalize nếu có trường hợp high < low
+    swap_mask = highs < lows
+    lows[swap_mask], highs[swap_mask] = highs[swap_mask], lows[swap_mask]
+
+    # Tạo intervals
+    intervals = list(zip(lows, highs))
+
+    # Sort intervals theo start
+    intervals.sort(key=lambda x: x[0])
+
+    # Merge intervals nhanh
+    merged = []
+    cur_start, cur_end = intervals[0]
+
+    for s, e in intervals[1:]:
+        if s <= cur_end:
+            cur_end = max(cur_end, e)
+        else:
+            merged.append((cur_start, cur_end))
+            cur_start, cur_end = s, e
+
+    merged.append((cur_start, cur_end))
+
+    # Kiểm tra bao phủ toàn bộ gap
+    for s, e in merged:
+        if s <= gap_low and e >= gap_high:
+            return True
+
+    return False

@@ -36,6 +36,10 @@ urlpatterns = [
     path('open-nc-file/', include('openNcFile.urls')),
     path('market-agent/', include('marketAgent.urls')),
     path('open-gap-calculator/', include('openGapCalculator.urls')),
+    path('forecasting/', include('forecasting.urls')),
+    path('quantum-engine/', include('quantumEngine.urls')),
+    path('quantum-engine-v2/', include('quantumEngineV2.urls')),
+    path('chart-ohlc/', include('chartOHLC.urls')),
 
     # AUTH CMS
     path('cms/login/', LoginView.as_view(), name='login_cms'),

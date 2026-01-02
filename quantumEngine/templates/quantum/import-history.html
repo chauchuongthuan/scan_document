@@ -1,0 +1,215 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'components/common/confirm_modal.html' %}
+<script src="{% static 'js/confirm_modal.js' %}"></script>
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+    </ol>
+    <div class="panel">
+    <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
+        Import history
+    </h5>
+    <div>
+        <form
+            id="postForm"
+            method="post"
+            enctype="multipart/form-data"
+            action="{% url 'quantum-import-history' %}"
+            class="space-y-5"
+        >
+            {% csrf_token %}
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="w-full space-y-6">
+                    <div>
+                        <label class="mt-2 mb-3 block">RC stock</label>
+                        <div class="flex items-center justify-center w-full">
+                            <label for="rc_stock_file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                    </svg>
+                                    <p id="filePreviewName" class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span class="font-semibold">Click để upload file</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">CSV (.csv)</p>
+                                </div>
+                                <input id="rc_stock_file" name="rc_stock_file" type="file" class="hidden" accept=".csv" required>
+                            </label>
+                        </div>
+                        <div id="rc_stock_fileNameDisplay" class="mt-2 text-sm text-green-600 hidden">
+                            <span class="font-medium">File đã chọn: </span><span id="rc_stock_selectedFileName"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mt-2 mb-3 block">KC stock</label>
+                        <div class="flex items-center justify-center w-full">
+                            <label for="kc_stock_file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                    </svg>
+                                    <p id="filePreviewName" class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span class="font-semibold">Click để upload file</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">CSV (.csv)</p>
+                                </div>
+                                <input id="kc_stock_file" name="kc_stock_file" type="file" class="hidden" accept=".csv" required>
+                            </label>
+                        </div>
+                        <div id="kc_stock_fileNameDisplay" class="mt-2 text-sm text-green-600 hidden">
+                            <span class="font-medium">File đã chọn: </span><span id="kc_stock_selectedFileName"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mt-2 mb-3 block">RC daily</label>
+                        <div class="flex items-center justify-center w-full">
+                            <label for="rc_daily_file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                    </svg>
+                                    <p id="filePreviewName" class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span class="font-semibold">Click để upload file</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">CSV (.csv)</p>
+                                </div>
+                                <input id="rc_daily_file" name="rc_daily_file" type="file" class="hidden" accept=".csv" required>
+                            </label>
+                        </div>
+                        <div id="rc_daily_fileNameDisplay" class="mt-2 text-sm text-green-600 hidden">
+                            <span class="font-medium">File đã chọn: </span><span id="rc_daily_selectedFileName"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mt-2 mb-3 block">KC daily</label>
+                        <div class="flex items-center justify-center w-full">
+                            <label for="kc_daily_file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                    </svg>
+                                    <p id="filePreviewName" class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <span class="font-semibold">Click để upload file</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">CSV (.csv)</p>
+                                </div>
+                                <input id="kc_daily_file" name="kc_daily_file" type="file" class="hidden" accept=".csv" required>
+                            </label>
+                        </div>
+                        <div id="kc_daily_fileNameDisplay" class="mt-2 text-sm text-green-600 hidden">
+                            <span class="font-medium">File đã chọn: </span><span id="kc_daily_selectedFileName"></span>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            <div class="mt-6 flex justify-end">
+            <button type="submit" onclick="submitForm(event)" class="btn btn-primary">Import</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+<script>
+    document.getElementById('rc_stock_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || '';
+        const rc_stock_fileNameDisplay = document.getElementById('rc_stock_fileNameDisplay');
+        const selectedFileName = document.getElementById('rc_stock_selectedFileName');
+        
+        if (fileName) {
+            selectedFileName.textContent = fileName;
+            rc_stock_fileNameDisplay.classList.remove('hidden');
+        } else {
+            rc_stock_fileNameDisplay.classList.add('hidden');
+        }
+    });
+
+    document.getElementById('kc_stock_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || '';
+        const kc_stock_fileNameDisplay = document.getElementById('kc_stock_fileNameDisplay');
+        const selectedFileName = document.getElementById('kc_stock_selectedFileName');
+        
+        if (fileName) {
+            selectedFileName.textContent = fileName;
+            kc_stock_fileNameDisplay.classList.remove('hidden');
+        } else {
+            kc_stock_fileNameDisplay.classList.add('hidden');
+        }
+    });
+
+    document.getElementById('rc_daily_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || '';
+        const rc_daily_fileNameDisplay = document.getElementById('rc_daily_fileNameDisplay');
+        const selectedFileName = document.getElementById('rc_daily_selectedFileName');
+        
+        if (fileName) {
+            selectedFileName.textContent = fileName;
+            rc_daily_fileNameDisplay.classList.remove('hidden');
+        } else {
+            rc_daily_fileNameDisplay.classList.add('hidden');
+        }
+    });
+
+    document.getElementById('kc_daily_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || '';
+        const kc_daily_fileNameDisplay = document.getElementById('kc_daily_fileNameDisplay');
+        const selectedFileName = document.getElementById('kc_daily_selectedFileName');
+        
+        if (fileName) {
+            selectedFileName.textContent = fileName;
+            kc_daily_fileNameDisplay.classList.remove('hidden');
+        } else {
+            kc_daily_fileNameDisplay.classList.add('hidden');
+        }
+    });
+
+    function showMessage(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function submitForm(event) {
+        const postForm = document.getElementById('postForm');
+        event.preventDefault();
+
+        formData = new FormData(postForm);
+        fetch(postForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage(data.message, data.status);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Submit failed', 'error');
+        });
+    }
+</script>
+{% endblock %}

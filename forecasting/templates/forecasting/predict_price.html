@@ -1,0 +1,161 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                AI Forecasting
+            </a>
+        </li>
+        <li class="before:content-['/'] before:px-1.5">
+            <a href="javascript:;" class="text-black dark:text-white-light hover:text-black/70 dark:hover:text-white-light/70">
+                Coffee Price Prediction
+            </a>
+        </li>
+    </ol>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="panel">
+            <div class="mb-5 flex items-center justify-between">
+                <h5 class="text-lg font-semibold dark:text-white-light">Nhập dữ liệu thị trường</h5>
+            </div>
+            <div class="mb-5">
+                <form id="postForm" method="POST" action="{% url 'coffee-forecast' %}" onsubmit="submitForm(event)">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h6 class="text-md font-bold mb-2">Dữ liệu giá (Ngày cũ)</h6>
+                            
+                            <div class="mb-4">
+                                <label for="prev_open" class="block text-sm font-medium">Giá mở cửa (Open)</label>
+                                <input type="number" step="0.01" id="prev_open" name="prev_open" class="form-input w-full" placeholder="VD: 4100 (Bỏ trống nếu thiếu)">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="prev_high" class="block text-sm font-medium">Giá cao nhất (High)</label>
+                                <input type="number" step="0.01" id="prev_high" name="prev_high" class="form-input w-full" placeholder="VD: 4150">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="prev_low" class="block text-sm font-medium">Giá thấp nhất (Low)</label>
+                                <input type="number" step="0.01" id="prev_low" name="prev_low" class="form-input w-full" placeholder="VD: 4080">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="prev_close" class="block text-sm font-medium">Giá đóng cửa (Close)</label>
+                                <input type="number" step="0.01" id="prev_close" name="prev_close" class="form-input w-full" required placeholder="VD: 4107">
+                            </div>
+                        </div>
+
+                        <div>
+                            <h6 class="text-md font-bold mb-2">Thông tin bổ sung</h6>
+
+                            <div class="mb-4">
+                                <label for="inventory" class="block text-sm font-medium">Mức tồn kho (Inventory - Ngày cũ)</label>
+                                <input type="number" step="0.01" id="inventory" name="inventory" class="form-input w-full" placeholder="VD: 4110">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="entropy" class="block text-sm font-medium">Điểm Entropy tin tức (Hôm nay)</label>
+                                <input type="number" step="0.001" id="entropy" name="entropy" class="form-input w-full" placeholder="VD: 0.75 (Từ function NLP)">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="weather" class="block text-sm font-medium">Thông tin thời tiết (Hôm nay)</label>
+                                <textarea id="weather" name="weather" rows="3" class="form-textarea w-full" placeholder="Nhập đoạn văn mô tả thời tiết..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end items-center mt-8">
+                        <button type="submit" class="btn btn-primary ltr:ml-4 rtl:mr-4">
+                            🔮 Dự báo ngay
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="result-box">
+            <div class="mb-5">
+                <h5 class="text-lg font-semibold text-primary">Kết quả Dự báo AI</h5>
+            </div>
+            <div class="text-center py-10">
+                <p class="text-gray-500 mb-2">Dự báo giá chốt phiên hôm nay:</p>
+                <div class="text-4xl font-bold text-success mb-4">
+                    $<span id="price-result">0.00</span>
+                </div>
+                
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                    <p class="text-sm">Điểm số thời tiết phân tích được: <strong id="weather-score-result">0</strong>/10</p>
+                    <p class="text-xs text-gray-400 mt-1">(0: Nắng ráo - 10: Mưa bão lớn)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hàm hiển thị thông báo SweetAlert (giữ nguyên từ code mẫu của bạn)
+    function showMessage(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function submitForm(event) {
+        event.preventDefault();
+        const postForm = document.getElementById('postForm');
+        const submitBtn = postForm.querySelector('button[type="submit"]');
+        
+        // Disable nút để tránh click nhiều lần
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = 'Đang xử lý...';
+        submitBtn.disabled = true;
+
+        const formData = new FormData(postForm);
+
+        fetch(postForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}' // Django CSRF token
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage(data.message, 'success');
+                
+                // Hiển thị kết quả ra màn hình
+                document.getElementById('result-box').classList.remove('hidden');
+                document.getElementById('price-result').innerText = data.data.price;
+                document.getElementById('weather-score-result').innerText = data.data.weather_score;
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage("Có lỗi xảy ra kết nối server", 'error');
+        })
+        .finally(() => {
+            // Restore nút
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        });
+    }
+</script>
+{% endblock %}
