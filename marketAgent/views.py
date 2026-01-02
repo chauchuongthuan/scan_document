@@ -7,199 +7,15 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings # Import settings
 import numpy as np
 import os
-import re
-import math
-import nltk
-# from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import logging # Thêm logging để theo dõi lỗi
 from django.shortcuts import render
 from datetime import datetime, timedelta
 import requests
-
-# from .models import DailyMarketPrice
-# from .market_agent_utils import (
-#     calculate_paragraph_entropy,
-#     safe_float,
-#     identify_paragraph_type,
-#     get_detailed_price_signals
-# )
-
-# Cấu hình logging
-logger = logging.getLogger(__name__)
-
-# Tải NLTK
-# nltk.download('punkt', quiet=True)
-
-# # --- KHỞI TẠO MÔ HÌNH VÀ MỎ NEO (CHẠY 1 LẦN KHI SERVER START) ---
-
-# def create_anchor_from_file(filepath, model):
-#     """Hàm này đọc file mẫu và tạo vector mỏ neo (anchor)."""
-#     try:
-#         if not os.path.exists(filepath):
-#             logger.error(f"[MarketAgent] File not found: {filepath}")
-#             return None
-#         with open(filepath, 'r', encoding='utf-8') as f:
-#             lines = [line.strip() for line in f if len(line.strip()) > 5]
-#         if not lines:
-#             logger.warning(f"[MarketAgent] Anchor file is empty: {filepath}")
-#             return None
-#         logger.info(f"[MarketAgent] Learning anchor from {len(lines)} samples in {filepath}...")
-#         embeddings = model.encode(lines, normalize_embeddings=True)
-#         mean_vec = np.mean(embeddings, axis=0, keepdims=True)
-#         mean_vec = mean_vec / np.linalg.norm(mean_vec)
-#         logger.info(f"[MarketAgent] Anchor loaded successfully for {filepath}")
-#         return mean_vec
-#     except Exception as e:
-#         logger.error(f"[MarketAgent] Error loading anchor file {filepath}: {e}")
-#         return None
-# # 1. Tải mô hình
-# try:
-#     MODEL = SentenceTransformer("all-MiniLM-L6-v2")
-#     logger.info("[MarketAgent] SentenceTransformer model loaded.")
-# except Exception as e:
-#     MODEL = None
-#     logger.error(f"[MarketAgent] CRITICAL: Failed to load SentenceTransformer model: {e}")
-
-# # 2. Định nghĩa đường dẫn file
-# BULLISH_FILE_PATH = os.path.join(settings.MARKET_AGENT_DATA_DIR, 'bullish.txt')
-# BEARISH_FILE_PATH = os.path.join(settings.MARKET_AGENT_DATA_DIR, 'bearish.txt')
-
-# # 3. Tải và cache các vector mỏ neo
-# if MODEL:
-#     BULLISH_VECTOR = create_anchor_from_file(BULLISH_FILE_PATH, MODEL)
-#     BEARISH_VECTOR = create_anchor_from_file(BEARISH_FILE_PATH, MODEL)
-# else:
-#     BULLISH_VECTOR = None
-#     BEARISH_VECTOR = None
-
-# MAX_CLUSTERS = 5
-# SCALE_FACTOR = 4 * math.pi * 2 * 0.72
-# # -----------------------------------------------------------------
-# class MarketAgentView(View):
-#     """
-#     API view để tính toán Tác động Giá (Price Impact) của văn bản.
-#     Sử dụng các mỏ neo ngữ nghĩa (bullish/bearish) để chấm điểm.
-#     """ 
-#     @login_required(login_url="login_cms")
-#     def post(request):
-#         if request.method == 'POST':
-#             try:
-#                 # Kiểm tra quan trọng
-#                 if MODEL is None or BULLISH_VECTOR is None or BEARISH_VECTOR is None:
-#                     return JsonResponse({"status": "error", "message": "Market Agent is not ready. Model or anchors failed."}, status=500)
-
-#                 text = request.POST.get('paragraph', '')
-#                 date_str = request.POST.get('date', '') # Lấy date từ request
-#                 curr_prices = {
-#                     "farm_gate_low": safe_float(request.POST.get('farm_gate_low', None)),
-#                     "farm_gate_high": safe_float(request.POST.get('farm_gate_high', None)),
-#                     "midstream_low": safe_float(request.POST.get('midstream_low', None)),
-#                     "midstream_high": safe_float(request.POST.get('midstream_high', None)),
-#                     "differential_ask": safe_float(request.POST.get('differential_ask', None)),
-#                     "differential_bid": safe_float(request.POST.get('differential_bid', None))
-#                 }
-                
-
-#                 if not text or len(text.strip()) < 5:
-#                     return JsonResponse({"status": "error", "message": "No valid text input."}, status=400)
-#                 if not date_str:
-#                     return JsonResponse({"status": "error", "message": "Missing 'date' field (YYYY-MM-DD)."}, status=400)
-
-#                 # --- 1. XỬ LÝ GIÁ VÀ SO SÁNH NGÀY ---
-#                 try:
-#                     current_date = datetime.fromisoformat(date_str).date()
-#                     prev_prices = None
-#                     for i in range(1, 5):
-#                          try:
-#                              prev_prices = DailyMarketPrice.objects.get(date=current_date - timedelta(days=i))
-#                              break
-#                          except DailyMarketPrice.DoesNotExist: continue
-#                 except ValueError: return JsonResponse({"status": "error", "message": "Invalid date format."}, status=400)
-                
-#                 # Lấy giá ngày hôm trước từ DB
-#                 price_signals = get_detailed_price_signals(curr_prices, prev_prices)
-
-#                 # Lưu giá hôm nay
-#                 if any(v is not None for v in curr_prices.values()):
-#                     DailyMarketPrice.objects.update_or_create(date=current_date, defaults=curr_prices)
-
-#                 # --- 2. XỬ LÝ TỪNG ĐOẠN (IMPACT & ENTROPY) ---
-#                 paragraphs = [p.strip() for p in re.split(r'\n{1,}', text) if len(p.strip()) > 0]
-#                 results = []
-#                 total_impact = 0.0
-
-#                 paragraphs = [p.strip() for p in re.split(r'\n{1,}', text) if len(p.strip()) > 0]
-#                 results = []
-#                 total_impact = 0.0
-#                 final_weighted_entropy = 0.0 # Biến mới cho Entropy có hướng
-
-#                 for idx, para in enumerate(paragraphs, start=1):
-#                     sentences = [s.strip() for s in sent_tokenize(para) if len(s.strip().split()) > 3]
-#                     if not sentences: continue
-
-#                     para_type = identify_paragraph_type(para)
-#                     sign = "neutral"
-#                     impact_val = 0.0
-#                     needs_review = False
-
-#                     if para_type in ["farm_gate", "midstream", "differential"]:
-#                         sign = price_signals.get(para_type, "neutral")
-#                         impact_val = 1.0 if sign == "+" else (-1.0 if sign == "-" else 0.0)
-#                     else:
-#                         # Logic semantic (mỏ neo)
-#                         emb = MODEL.encode(sentences, normalize_embeddings=True)
-#                         bullish = np.sum(cosine_similarity(emb, BULLISH_VECTOR))
-#                         bearish = np.sum(cosine_similarity(emb, BEARISH_VECTOR))
-#                         impact_val = float(bullish - bearish)
-#                         sign = "+" if impact_val > 0.05 else ("-" if impact_val < -0.05 else "neutral")
-
-#                     # Nếu là neutral, đánh dấu cần xem lại
-#                     if sign == "neutral":
-#                         needs_review = True
-
-#                     entropy_data = calculate_paragraph_entropy(sentences, MODEL, MAX_CLUSTERS, SCALE_FACTOR)
-#                     scaled_entropy = entropy_data["scaled_entropy"]
-
-#                     # --- LOGIC MỚI CHO FINAL ENTROPY ---
-#                     entropy_weight = 0
-#                     if sign == "+": entropy_weight = 1
-#                     elif sign == "-": entropy_weight = -1
-
-#                     final_weighted_entropy += (scaled_entropy * entropy_weight)
-#                     # ------------------------------------
-
-#                     results.append({
-#                         "paragraph_index": idx,
-#                         "type": para_type,
-#                         "paragraph_sign": sign,
-#                         "paragraph_impact_score": round(impact_val, 4),
-#                         "scaled_entropy": scaled_entropy,
-#                         "deviation_entropy": entropy_data["deviation_entropy"],
-#                         "cluster_entropy": entropy_data["cluster_entropy"],
-#                         "num_clusters": entropy_data["num_clusters"],
-#                         "needs_manual_review": needs_review,
-#                         "text_preview": para
-#                     })
-
-#                 return JsonResponse({
-#                     "status": "success",
-#                     "result": {
-#                         "final_market_flow_score": round(total_impact, 4),
-#                         "final_weighted_entropy": round(final_weighted_entropy, 4),
-#                         "price_signals": price_signals,
-#                         "paragraphs": results
-#                     }
-#                 }, status=200)
-
-#             except Exception as e:
-#                 logger.error(f"[MarketAgent] Calculate failed: {str(e)}", exc_info=True)
-#                 return JsonResponse({
-#                     "status": "error",
-#                     "message": f"Calculate failed: {str(e)}"
-#                 }, status=500)
-#         return render(request, 'market-agent/create.html')
+import pandas as pd
+import json
+from .models import IceRCStockData
+import openpyxl.styles
 
 class SearchGGView(View):
     def get(request):
@@ -250,3 +66,149 @@ class SearchGGView(View):
             })
         print("final_data", final_data)
         return render(request, 'market-agent/gg-search.html', {'results': final_data})
+
+class KCDataStockJsonToExcel(View):
+    def post(request):
+        if request.method == 'POST':
+            try:
+                timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M')
+                input_file = f"media/kc_local_uploads/stock_coffee_data.json"
+                output_file = f"ice_kc_stock_data_export_{timestamp}.xlsx"
+                output_path = os.path.join(settings.MEDIA_ROOT, 'ice_kc_stock_data_export', output_file)
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                with open(input_file, 'r') as f:
+                    data = json.load(f)
+
+                # 2. Chuyển đổi dữ liệu thành DataFrame
+                # Mỗi phần tử trong list là một row: [Date, Bags]
+                # Ta đặt tên cột là 'Date' và 'Bags'
+                df = pd.DataFrame(data, columns=['Date', 'Bags'])
+
+                # Tùy chọn: Chuyển đổi cột 'Bags' sang kiểu số (float)
+                df['Bags'] = pd.to_numeric(df['Bags'], errors='coerce')
+                
+                # Tùy chọn: Chuyển đổi cột 'Date' sang kiểu datetime
+                df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+                # 3. Lưu DataFrame vào file Excel
+                df.to_excel(output_path, index=False) # index=False để không ghi số thứ tự hàng vào Excel
+
+                print(f"✅ Chuyển đổi thành công! Dữ liệu đã được lưu vào: {output_file}")
+                print("\n---")
+                print("Dữ liệu 5 hàng đầu trong DataFrame:")
+                print(df.head())
+
+                return JsonResponse({
+                        "status": "success",
+                        "message": "Lấy dữ liệu thành công!",
+                        "result": f"/media/ice_kc_stock_data_export/{output_file}"
+                    }, status=200)
+            except Exception as e:
+                return JsonResponse({
+                    "status": "error",
+                    "message": f"Lấy dữ liệu thất bại: {str(e)}"
+                }, status=400)
+
+
+        return render(request, 'market-agent/get-kc-stock-data.html')
+
+class RCDataStockView(View):
+    def post(request):
+        if request.method == 'POST':
+            try:
+                EXPORT_DIR = os.path.join(settings.MEDIA_ROOT, 'ice_rc_stock_data_export')
+
+                start_date = request.POST.get('start_date', None)
+                end_date = request.POST.get('end_date', None)
+                
+                if start_date and end_date:
+                    ice_rc_stock_datas = IceRCStockData.objects.filter(date__range=(start_date, end_date)).order_by('date')
+                else:
+                    ice_rc_stock_datas = IceRCStockData.objects.all().order_by('date')
+                
+                data = []
+                
+                for ice_rc_stock_data in ice_rc_stock_datas:
+                    # Định dạng date: DateField của Django là datetime.date object
+                    date_formatted = ice_rc_stock_data.date.strftime('%d/%m/%Y') if ice_rc_stock_data.date else ""
+                    
+                    # Xử lý trường hợp lots_with_val_cert là None (NULL)
+                    lots_with_val_cert_value = str(ice_rc_stock_data.lots_with_val_cert) if ice_rc_stock_data.lots_with_val_cert is not None else ''
+                    lots_non_tend_value = str(ice_rc_stock_data.lots_non_tend) if ice_rc_stock_data.lots_non_tend is not None else ''
+                    lots_suspended_value = str(ice_rc_stock_data.lots_suspended) if ice_rc_stock_data.lots_suspended is not None else ''
+
+                    data.append({
+                        'date': date_formatted,
+                        'lots_with_val_cert': lots_with_val_cert_value,
+                        'lots_non_tend': lots_non_tend_value,
+                        'lots_suspended': lots_suspended_value
+                    })
+                
+                df = pd.DataFrame(data)
+                
+                # 2. Định nghĩa tên file và đường dẫn cục bộ
+                timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M')
+                output_file = f"ice_rc_stock_data_export_{timestamp}.xlsx"
+                output_path = os.path.join(settings.MEDIA_ROOT, 'ice_rc_stock_data_export', output_file)
+                # 3. Tạo Excel file cục bộ
+                with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+                    # Tương tự như trước, tạo sheet tạm để khởi tạo writer
+                    df.to_excel(writer, sheet_name='Temp', index=False)
+                    
+                    workbook = writer.book
+                    
+                    # Xóa sheet mặc định và tạo sheet mới
+                    if 'Temp' in workbook.sheetnames:
+                        del workbook['Temp']
+                    if 'Sheet' in workbook.sheetnames:
+                        del workbook['Sheet']
+                        
+                    worksheet = workbook.create_sheet("SCHEDULE", 0)
+                    
+                    # Cấu hình Style
+                    header_font = openpyxl.styles.Font(bold=True)
+                    center_align = openpyxl.styles.Alignment(horizontal='center', vertical='center')
+
+                    # Merge dòng 1 và dòng 2: Tiêu đề "SCHEDULE"
+                    worksheet.merge_cells('A1:D2') 
+                    worksheet['A1'] = 'SCHEDULE'
+                    worksheet['A1'].font = header_font
+                    worksheet['A1'].alignment = center_align
+                    
+                    # Dòng 3: Headers
+                    headers = ['DATE', 'LOTS WITH VAL CERT', 'LOTS NON TEND', 'LOTS SUSPENDED']
+                    
+                    for col, header in enumerate(headers, 1):
+                        cell = worksheet.cell(row=3, column=col, value=header)
+                        cell.font = header_font
+                        cell.alignment = center_align
+                    
+                    # Ghi dữ liệu
+                    if not df.empty:
+                        for r_idx, row_data in enumerate(df.itertuples(), 4):
+                            # Ghi dữ liệu ngày (cột 1)
+                            worksheet.cell(row=r_idx, column=1, value=row_data[1])
+                            # Ghi dữ liệu lots_with_val_cert (cột 2)
+                            worksheet.cell(row=r_idx, column=2, value=row_data[2])
+                            # Ghi dữ liệu lots_non_tend (cột 3)
+                            worksheet.cell(row=r_idx, column=3, value=row_data[3])
+                            # Ghi dữ liệu lots_suspended (cột 4)
+                            worksheet.cell(row=r_idx, column=4, value=row_data[4])
+                            
+                    # Tùy chỉnh độ rộng cột
+                    worksheet.column_dimensions['A'].width = 15
+                    worksheet.column_dimensions['B'].width = 20
+                    worksheet.column_dimensions['C'].width = 20
+                    worksheet.column_dimensions['D'].width = 20
+                                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Export dữ liệu thành công.',
+                    'result': f"/media/ice_rc_stock_data_export/{output_file}", # Đường dẫn cục bộ trên server
+                }, status=200)
+            except Exception as e:
+                return JsonResponse({
+                    "status": "error",
+                    "message": f"Lấy dữ liệu thất bại: {str(e)}"
+                }, status=400)
+        return render(request, 'market-agent/get-rc-stock-data.html')

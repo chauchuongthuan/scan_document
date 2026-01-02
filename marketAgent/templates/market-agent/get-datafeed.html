@@ -18,7 +18,7 @@
     </ol>
     <div class="panel">
     <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
-        Get datafeed
+        Get datafeed (Cuối tháng 1 KCH -> KCK)
     </h5>
     <div>
         <form
@@ -43,21 +43,41 @@
                                         class="form-input"
                                     >
                                         <option value="KCH2026">KCH2026</option>
-                                        <option value="RCF2026">RCF2026</option>
+                                        <option value="RCH2026">RCH2026</option>
+                                        <option value="KCZ2025">KCZ2025</option>
+                                        <option value="KCK2026">KCK2026</option>
+                                        <option value="KCN2026">KCN2026</option>
+                                        <option value="KCU2026">KCU2026</option>
+                                        <option value="KCZ2026">KCZ2026</option>
+                                        <option value="KCH2027">KCH2027</option>
                                     </select>
                                 </div>
                             </div>
-                            <!-- <div>
-                                <label class="mt-2" for="exchange">Exchange</label>
+                            <div>
+                                <label class="mt-2" for="interval">Interval</label>
+                                <div class="flex items-center gap-2">
+                                    <select
+                                        id="interval"
+                                        name="interval"
+                                        class="form-input"
+                                    >
+                                        <option value="in_1_minute">1 Minute</option>
+                                        <option value="in_daily">Daily</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mt-2" for="n_bars">N Bars</label>
                                 <div class="flex items-center gap-2">
                                     <input
-                                        id="exchange"
-                                        type="text"
-                                        name="exchange"
+                                        id="n_bars"
+                                        type="number"
+                                        name="n_bars"
                                         class="form-input"
+                                        value="10000"
                                     ></input>
                                 </div>
-                            </div> -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -75,7 +95,7 @@
             toast: true,
             position: 'top-end',
             showConfirmButton: false,
-            timer: 3000,
+            timer: 1500,
             // didClose: () => {
             //     window.location.reload();
             // }
@@ -107,7 +127,7 @@
                 window.open(data.result, '_blank');
                 setTimeout(() => {
                     window.location.reload();
-                }, 3000);
+                }, 1500);
             }
         })
         .catch(error => {

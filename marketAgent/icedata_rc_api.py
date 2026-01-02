@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime, date, timedelta
 from django.db import IntegrityError
 from django.conf import settings 
-# from .models import IceRCStockData # Đảm bảo import Model của bạn
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -153,13 +152,13 @@ class ImportLocalIceRCDataView(APIView):
                 target_filenames = [f for f in os.listdir(RC_UPLOAD_DIR) if f.lower().endswith('.csv')]
             except FileNotFoundError:
                 return Response({
-                    'success': False,
+                    'status': 'error',
                     'message': f'Thư mục chứa file "{RC_UPLOAD_DIR}" không tồn tại.'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         if not target_filenames:
             return Response({
-                'success': True,
+                'status': 'error',
                 'message': 'Không tìm thấy file nào để xử lý.'
             }, status=status.HTTP_200_OK)
             
@@ -170,16 +169,14 @@ class ImportLocalIceRCDataView(APIView):
             results = process_local_rc_files(file_paths)
             
             return Response({
-                'success': True,
-                'data': {
-                    'message': f"Hoàn thành quá trình nhập dữ liệu từ {results['total_files']} file.",
-                    'summary': results
-                }
+                'status': 'success',
+                'message': f"Hoàn thành quá trình nhập dữ liệu từ {results['total_files']} file.",
+                'summary': results
             }, status=status.HTTP_200_OK)
         
         except Exception as e:
             return Response({
-                'success': False,
+                'status': 'error',
                 'message': f"Đã xảy ra lỗi trong quá trình xử lý: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -187,7 +184,14 @@ class ExportIceRCDataView(APIView):
     def get(self, request):
         try:
             # 1. Lấy dữ liệu
-            ice_rc_stock_datas = IceRCStockData.objects.all().order_by('date')
+            start_date = request.query_params.get('start_date', None)
+            end_date = request.query_params.get('end_date', None)
+            
+            if start_date and end_date:
+                ice_rc_stock_datas = IceRCStockData.objects.filter(date__range=(start_date, end_date)).order_by('date')
+            else:
+                ice_rc_stock_datas = IceRCStockData.objects.all().order_by('date')
+            
             data = []
             
             for ice_rc_stock_data in ice_rc_stock_datas:
@@ -270,7 +274,7 @@ class ExportIceRCDataView(APIView):
             download_url = f"{settings.MEDIA_URL}{relative_path}" # Hoặc chỉ trả về relative_path nếu cần
             
             return Response({
-                'success': True,
+                'status': 'success',
                 'message': 'Export dữ liệu thành công.',
                 'file_name': filename,
                 'file_path': file_path, # Đường dẫn cục bộ trên server
@@ -279,6 +283,6 @@ class ExportIceRCDataView(APIView):
         
         except Exception as e:
             return Response({
-                'success': False,
+                'status': 'error',
                 'message': f"Đã xảy ra lỗi trong quá trình xử lý: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

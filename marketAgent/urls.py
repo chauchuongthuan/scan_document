@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import SearchGGView
+from .views import SearchGGView, KCDataStockJsonToExcel, RCDataStockView
 from .create_prompt_views import CreatePromptView
 from .ft_search_views import FTSearchView
 from .afr_search_views import AfrSearchView
@@ -23,5 +23,8 @@ urlpatterns = [
 
     path('get-ice-rc-data', ImportLocalIceRCDataView.as_view(), name='get-ice-rc-data'),
     path('export-ice-rc-data', ExportIceRCDataView.as_view(), name='export-ice-rc-data'),
+
+    path('export-kc-stock-data', KCDataStockJsonToExcel.post, name='export-kc-stock-data'),
+
+    path('export-rc-stock-data', RCDataStockView.post, name='export-rc-stock-data'),
 ]
- 

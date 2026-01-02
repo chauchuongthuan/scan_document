@@ -1,0 +1,276 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'components/common/confirm_modal.html' %}
+<script src="{% static 'js/confirm_modal.js' %}"></script>
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Hợp đồng</a></li>
+    </ol>
+    <div class="panel">
+        <div class="flex items-center justify-between mb-4">
+            <!-- Search Form -->
+            <form method="GET" action="{% url 'document-list' %}" class="flex items-center w-9/12 mr-2">
+                <input type="text" 
+                       name="name_search" 
+                       placeholder="Comco ref or Buyer ref" 
+                       class="form-input w-2/12 mr-2" 
+                       value="{{ request.GET.name_search }}">
+                <button type="submit" class="btn btn-primary ml-2 w-2/12" style="justify-items: flex-end;">Tìm kiếm</button>
+            </form>
+            
+            <!-- Add Button -->
+            <a href="{% url 'document-create' %}" class="btn btn-primary w-1/12">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Tạo mới
+            </a>
+            <!-- Import Button -->
+            <button class="btn btn-primary w-1/12" onclick="showImportModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21 14a1 1 0 0 0-1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4a1 1 0 0 0-2 0v4a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-4a1 1 0 0 0-1-1Zm-9.71 1.71a1 1 0 0 0 .33.21a.94.94 0 0 0 .76 0a1 1 0 0 0 .33-.21l4-4a1 1 0 0 0-1.42-1.42L13 12.59V3a1 1 0 0 0-2 0v9.59l-2.29-2.3a1 1 0 1 0-1.42 1.42Z"/>
+                </svg>
+                Import
+            </button>
+            <!-- Export Button -->
+            <button class="btn btn-success w-1/12" onclick="exportExcel()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M8.71 7.71L11 5.41V15a1 1 0 0 0 2 0V5.41l2.29 2.3a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42l-4-4a1 1 0 0 0-.33-.21a1 1 0 0 0-.76 0a1 1 0 0 0-.33.21l-4 4a1 1 0 1 0 1.42 1.42ZM21 14a1 1 0 0 0-1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4a1 1 0 0 0-2 0v4a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-4a1 1 0 0 0-1-1Z"/>
+                </svg>
+                Export
+            </button>
+        </div>
+        <!-- Modal Import -->
+        <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg w-96 border">
+                <h2 class="text-lg font-bold mb-4">Import Excel</h2>
+                <form id="importForm">
+                    <input type="file" name="excel_file" id="excelFileInput" accept=".xlsx,.xls" required class="mb-4">
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="hideImportModal()" class="btn btn-sm btn-outline-danger">Hủy</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <table class="table-striped table-hover"> 
+            <thead> 
+                <tr> 
+                    <th>Comco ref</th> 
+                    <th>Buyer ref</th> 
+                    <th>Contract date</th> 
+                    <th>Price</th> 
+                    <th class="!text-center">Actions</th> 
+                </tr> 
+            </thead> 
+            <tbody> 
+                {% csrf_token %} 
+                {% for document in documents %} 
+                <tr> 
+                    <td>{{ document.comco_ref }}</td> 
+                    <td>{{ document.buyer_ref }}</td> 
+                    <td>{{ document.contract_date }}</td> 
+                    <td>{{ document.price }}</td> 
+                    
+                    <td class="!text-center"> 
+                        <div class="flex items-center justify-center gap-4"> 
+                            <a href="{% url 'document-update' document.pk %}" class="btn btn-sm btn-outline-primary"> Edit </a> 
+                            <button class="btn btn-sm btn-outline-danger" data-delete-url="{% url 'document-delete' document.pk %}" data-name="{{ document.comco_ref }}" onclick="showDeleteConfirmation(this)"> Delete </button> 
+                        </div> 
+                    </td> 
+                </tr> 
+                {% endfor %} 
+            </tbody> 
+        </table>
+        {% if documents.has_other_pages %}
+        <div class="flex items-center justify-between border-t border-[#e0e6ed] px-4 py-4 dark:border-[#1b2e4b]">
+            <div class="flex items-center gap-3 w-[300px]">
+                <form id="perPageForm" method="get" class="flex items-center">
+                    <select name="per_page" id="per_page" class="form-select w-[67px]" onchange="this.form.submit()">
+                        {% for option in per_page_options %}
+                            <option value="{{ option }}" {% if option == per_page %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="search" value="{{ search_query }}">
+                </form>
+                <p>Hiển thị {{ documents.start_index }} đến {{ documents.end_index }} trên {{ documents.paginator.count }}</p>
+            </div>
+            <ul class="inline-flex items-center gap-1">
+                {% if documents.has_previous %}
+                    <li class="pager">
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M13 19L7 12L13 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path opacity="0.5" d="M16.9998 19L10.9998 12L16.9998 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="pager">
+                        <a href="?page={{ pages.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M15 5L9 12L15 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                {% endif %}
+                {% for i in documents.paginator.page_range %}
+                    {% if documents.number == i %}
+                        <li class="pager">
+                            <a href="#" aria-current="page" class="flex items-center justify-center rounded bg-primary px-3.5 py-2 font-semibold text-white transition dark:bg-primary dark:text-white-light">{{ i }}</a>
+                        </li>
+                    {% elif i > documents.number|add:'-3' and i < documents.number|add:'3' %}
+                        <li class="pager">
+                            <a href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light px-3.5 py-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if documents.has_next %}
+                    <li class="pager">
+                        <a href="?page={{ documents.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="pager">
+                        <a href="?page={{ documents.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M11 19L17 12L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path opacity="0.5" d="M6.99976 19L12.9998 12L6.99976 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>
+    function showDeleteConfirmation(button) {
+        const name = button.getAttribute('data-name');
+        const deleteUrl = button.getAttribute('data-delete-url');
+        confirmModal.show({
+            title: 'Xác nhận xóa',
+            content: `Bạn có chắc chắn muốn xóa "${name}" không?`,
+            url: deleteUrl,
+            confirmText: 'Xóa',
+            cancelText: 'Hủy',
+            onSuccess: (data) => {
+                showMessage(data.message, data.status);
+            },
+            onError: (data) => {
+                showMessage(data.message, data.status)
+            }
+        });
+    }
+    function showMessage(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            didClose: () => {
+                window.location.reload();
+            }
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function showImportModal() {
+        document.getElementById('importModal').classList.remove('hidden');
+    }
+    function hideImportModal() {
+        document.getElementById('importModal').classList.add('hidden');
+        document.getElementById('excelFileInput').value = '';
+    }
+
+    document.getElementById('importForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch("{% url 'document-import-excel' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.status === "success" || result.status === "warning") {
+                showMessageFileExcel(result.message, result.status);
+                hideImportModal();
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            }
+            else {
+                showMessageFileExcel(result.message, result.status);
+                hideImportModal();
+            }
+        } catch (error) {
+            showMessageFileExcel("Lỗi khi upload file: " + error, "error");
+        }
+    });
+    function showMessageFileExcel(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+    async function exportExcel() {
+        const response = await fetch('{% url "document-export-excel" %}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        }).then(response => {
+        if (response.ok) {
+            return response.blob();
+        }
+        throw new Error('Export failed');
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `schedule_export.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            showMessageFileExcel('Export Excel thành công!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessageFileExcel('Export Excel thất bại!', 'error');
+        });
+    }
+</script>
+{% endblock %}

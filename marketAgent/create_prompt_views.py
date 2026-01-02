@@ -180,7 +180,9 @@ class CreatePromptView(View):
                         "default_text": "Default text of paragraph",
                         "sign_explanation": "Explain why it is + or -"
                     }
-                    ]
+                    ],
+                    "summary_all_blog_sign": +,
+                    "summary_all_blog_sign_explain": "Explain why it is + or -",
                 """
                 # response = client.models.generate_content(
                 #     model="gemini-2.5-flash",

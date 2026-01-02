@@ -24,7 +24,7 @@ from django.db.models import F
 
 # --- CẤU HÌNH API ---
 # Thay API Key của bạn vào đây
-client = genai.Client(api_key="AIzaSyA46hJwJsxpkB-a78FG2j9ryeB4OZ4RbjE")
+client = genai.Client(api_key="AIzaSyA46hJwJsxpkB-a78FG2j9ryeB4OZ41111")
 
 class NewsScanner:
     def __init__(self):

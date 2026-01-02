@@ -49,6 +49,10 @@ INSTALLED_APPS = [
     "openNcFile",
     "marketAgent",
     "openGapCalculator",
+    "forecasting",
+    "quantumEngine",
+    "quantumEngineV2",
+    "chartOHLC",
 ]
 
 MIDDLEWARE = [
@@ -138,7 +142,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
+USE_TZ = True
 
 USE_I18N = True
 

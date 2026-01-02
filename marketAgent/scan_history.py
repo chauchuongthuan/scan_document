@@ -84,6 +84,7 @@ class NewsScanner:
             "Thanh Niên": "https://thanhnien.vn/rss/thoi-su.rss",
             "VietnamNet": "https://vietnamnet.vn/rss/thoi-su.rss",
             "VietNamPlus": "https://www.vietnamplus.vn/rss/xahoi-314.rss",
+            "Pháp luật": "https://plo.vn/rss/thoi-su-1.rss",
         }
 
     def normalize_link(self, link):

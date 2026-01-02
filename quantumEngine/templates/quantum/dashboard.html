@@ -1,0 +1,199 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="p-6">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li><a href="/" class="hover:text-gray-500/70">Home</a></li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;" class="text-black dark:text-white-light hover:text-black/70">Quantum Market</a></li>
+    </ol>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="panel lg:col-span-1 border p-4 rounded bg-white shadow">
+            <div class="mb-5">
+                <h5 class="font-semibold text-lg dark:text-white-light">📝 Nhập Liệu Thị Trường</h5>
+            </div>
+            
+            <form id="marketForm">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Ngày Dữ Liệu</label>
+                    <input type="date" name="date" class="form-input w-full border p-2 rounded" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Giá Farm-Gate (VND)</label>
+                        <input type="number" step="0.1" name="farm_price" class="form-input w-full border p-2 rounded" placeholder="90000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Giá Midstream (VND)</label>
+                        <input type="number" step="0.1" name="midstream_price" class="form-input w-full border p-2 rounded" placeholder="92000">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Tổng hợp tin tức (Market Synopsis)</label>
+                    <textarea name="news_content" rows="8" class="form-textarea w-full border p-2 rounded" placeholder="Paste đoạn văn tiếng Anh vào đây..."></textarea>
+                </div>
+
+                <button type="button" id="btnAnalyze" class="btn btn-primary w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+                    Chạy Dự Báo Lượng Tử
+                </button>
+            </form>
+        </div>
+
+        <div class="panel lg:col-span-2 border p-4 rounded bg-white shadow">
+            
+            <div class="flex border-b border-gray-200 mb-4" id="tabsContainer">
+                <button class="p-3 border-b-2 border-blue-500 text-blue-600 font-semibold" onclick="showTab(0)">Kết Quả Dự Báo</button>
+                <button class="p-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700" onclick="showTab(1)">Lịch Sử Dữ Liệu</button>
+            </div>
+
+            <div id="tabContents">
+                
+                <div id="tab-content-0" class="space-y-4">
+                    <div id="resultPlaceholder" class="text-center text-gray-400 py-10">
+                        Chưa có dữ liệu. Vui lòng nhập thông tin và nhấn "Chạy Dự Báo".
+                    </div>
+
+                    <div id="resultContainer" class="hidden">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div class="p-4 bg-gray-50 rounded border">
+                                <div class="text-sm text-gray-500">Xác Suất Tăng</div>
+                                <div class="text-2xl font-bold text-green-600" id="resProb">--</div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded border">
+                                <div class="text-sm text-gray-500">Độ Tinh Khiết</div>
+                                <div class="text-2xl font-bold text-blue-600" id="resPurity">--</div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded border">
+                                <div class="text-sm text-gray-500">Cảm Xúc Tin</div>
+                                <div class="text-xl font-semibold" id="resSentiment">--</div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded border">
+                                <div class="text-sm text-gray-500">Trend Z</div>
+                                <div class="text-xl font-semibold" id="resTrend">--</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-4 border rounded bg-blue-50 text-blue-800 text-sm">
+                            <strong>Nhận định máy:</strong> <span id="resAdvice">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-content-1" class="hidden">
+                    <div class="overflow-x-auto">
+                        <table class="table-auto w-full text-left text-sm">
+                            <thead class="bg-gray-100 text-gray-600 font-medium border-b">
+                                <tr>
+                                    <th class="p-2">Ngày</th>
+                                    <th class="p-2">Farm Price</th>
+                                    <th class="p-2">RC Close</th>
+                                    <th class="p-2">KC Close</th>
+                                    <th class="p-2">RC Stock</th>
+                                    <th class="p-2">KC Stock</th>
+                                    <th class="p-2">Purity</th>
+                                    <th class="p-2">Bull Prob</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in history %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="p-2">{{ item.date|date:"d/m/Y" }}</td>
+                                    <td class="p-2">{{ item.manual_farm_gate_price }}</td>
+                                    <td class="p-2">{{ item.rc_close|default_if_none:"-" }}</td>
+                                    <td class="p-2">{{ item.kc_close|default_if_none:"-" }}</td>
+                                    <td class="p-2">{{ item.rc_inventory|default_if_none:"-" }}</td>
+                                    <td class="p-2">{{ item.kc_inventory|default_if_none:"-" }}</td>
+                                    <td class="p-2 font-mono text-blue-600">{{ item.purity }}</td>
+                                    <td class="p-2 font-mono {% if item.bullish_prob > 0.5 %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {{ item.bullish_prob }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching logic (Giống file mẫu)
+    function showTab(activeIndex) {
+        const tabs = document.querySelectorAll('#tabsContainer button');
+        const contents = document.querySelectorAll('#tabContents > div');
+        
+        tabs.forEach((tab, i) => {
+            if (i === activeIndex) {
+                tab.classList.add('border-blue-500', 'text-blue-600');
+                tab.classList.remove('border-transparent', 'text-gray-500');
+                contents[i].classList.remove('hidden');
+            } else {
+                tab.classList.remove('border-blue-500', 'text-blue-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+                contents[i].classList.add('hidden');
+            }
+        });
+    }
+
+    // Ajax Handler
+    document.getElementById('btnAnalyze').addEventListener('click', async () => {
+        const form = document.getElementById('marketForm');
+        const formData = new FormData(form);
+        const btn = document.getElementById('btnAnalyze');
+
+        // Loading state
+        btn.disabled = true;
+        btn.innerText = 'Đang tính toán...';
+
+        try {
+            const response = await fetch("{% url 'quantum-dashboard' %}", {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                // Update UI
+                const res = data.result;
+                document.getElementById('resultPlaceholder').classList.add('hidden');
+                document.getElementById('resultContainer').classList.remove('hidden');
+
+                document.getElementById('resProb').innerText = (res.bullish_prob * 100).toFixed(1) + '%';
+                document.getElementById('resPurity').innerText = res.purity.toFixed(3);
+                document.getElementById('resSentiment').innerText = res.sentiment;
+                document.getElementById('resTrend').innerText = res.trend_z;
+
+                // Simple Logic Advice
+                let advice = "";
+                if (res.purity < 0.6) advice = "Thị trường hỗn loạn (Mixed State). Rủi ro cao, nên đứng ngoài.";
+                else if (res.bullish_prob > 0.6) advice = "Tín hiệu Tăng (Bullish) rõ ràng.";
+                else advice = "Tín hiệu Giảm (Bearish) chiếm ưu thế.";
+                
+                document.getElementById('resAdvice').innerText = advice;
+                
+                // Switch to result tab
+                showTab(0);
+            } else {
+                alert('Lỗi: ' + data.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('Có lỗi xảy ra khi kết nối server');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Chạy Dự Báo Lượng Tử';
+        }
+    });
+</script>
+{% endblock %}

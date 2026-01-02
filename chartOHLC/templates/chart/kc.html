@@ -1,0 +1,65 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="p-4">
+    <div class="panel">
+        <div class="flex justify-between items-center mb-4">
+            <h5 class="text-lg font-semibold">Live Chart: <span id="currentSymbol">KCH2026</span></h5>
+        </div>
+        <div id="chartContainer" style="width: 100%; height: 500px;"></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+
+<script>
+    let chart;
+    let candleSeries;
+
+    function initChart() {
+        const chartOptions = { 
+            layout: { background: { color: '#ffffff' }, textColor: '#333' }, // Sửa cấu hình layout mới
+            grid: { vertLines: { color: '#f0f0f0' }, horzLines: { color: '#f0f0f0' } },
+            timeScale: { timeVisible: true, secondsVisible: false },
+            localization: {
+                locale: 'vi-VN',
+            },
+        };
+        
+        // Khởi tạo chart
+        chart = LightweightCharts.createChart(document.getElementById('chartContainer'), chartOptions);
+        
+        // SỬA LỖI TẠI ĐÂY: Sử dụng cú pháp mới để thêm Candlestick Series
+        candleSeries = chart.addCandlestickSeries({
+            upColor: '#26a69a', 
+            downColor: '#ef5350', 
+            borderVisible: false,
+            wickUpColor: '#26a69a', 
+            wickDownColor: '#ef5350',
+        });
+    }
+
+    function loadChart() {
+        fetch(`{% url 'get-chart-json-kc' %}`)
+            .then(res => res.json())
+            .then(data => {
+                const adjustedData = data.map(item => ({
+                ...item,
+                time: item.time + (7 * 60 * 60) 
+                }));
+
+                candleSeries.setData(adjustedData);
+                })
+            .catch(err => console.error("Lỗi tải dữ liệu:", err));
+    }
+
+    // Cập nhật mỗi 15 phút
+    setInterval(loadChart, 900000);
+
+    window.onload = () => {
+        initChart();
+        loadChart();
+    };
+</script>
+{% endblock %}
