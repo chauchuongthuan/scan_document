@@ -7,6 +7,8 @@ import pytesseract
 from PIL import Image
 import io
 import re
+import math
+from statistics import stdev
 
 def generate_order_id():
     while True:
@@ -242,3 +244,37 @@ def split_sentences(text):
     sentences = re.split(r'[.\n;!?]+', text)
     sentences = [s.strip() for s in sentences if len(s.strip()) > 5]
     return sentences
+
+def calculate_and_set_stdev(instance):
+    """
+    Hàm tính Standard Deviation cho 20 ngày gần nhất (Annualized)
+    Công thức: STDEV.S(20 ngày) * SQRT(252)
+    """
+    # Lấy class của instance (OHLCDataRCDaily hoặc OHLCDataKCDaily)
+    ModelClass = instance.__class__
+    
+    # Lấy 19 bản ghi gần nhất có ngày nhỏ hơn ngày hiện tại
+    past_records = ModelClass.objects.filter(
+        timestamp__lt=instance.timestamp
+    ).order_by('-timestamp')[:19]
+
+    def get_annualized_stdev(current_val, field_name):
+        # Tập hợp danh sách giá trị: [giá trị hiện tại, giá trị 1, giá trị 2, ..., giá trị 19]
+        values = [float(current_val)]
+        for r in past_records:
+            val = getattr(r, field_name)
+            if val is not None:
+                values.append(float(val))
+        
+        # STDEV.S (mẫu) yêu cầu ít nhất 2 giá trị
+        if len(values) < 2:
+            return 0.0
+        
+        # statistics.stdev tương đương STDEV.S trong Excel
+        return stdev(values) * math.sqrt(252)
+
+    # Gán giá trị vào các field tương ứng
+    instance.stdev_vol_open_20_days = get_annualized_stdev(instance.volatility_open, 'volatility_open')
+    instance.stdev_vol_high_20_days = get_annualized_stdev(instance.volatility_high, 'volatility_high')
+    instance.stdev_vol_low_20_days = get_annualized_stdev(instance.volatility_low, 'volatility_low')
+    instance.stdev_vol_close_20_days = get_annualized_stdev(instance.volatility_close, 'volatility_close')

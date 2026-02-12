@@ -16,6 +16,7 @@ import pandas as pd
 import json
 from .models import IceRCStockData
 import openpyxl.styles
+from django.core.paginator import Paginator
 
 class SearchGGView(View):
     def get(request):
@@ -108,9 +109,29 @@ class KCDataStockJsonToExcel(View):
                     "status": "error",
                     "message": f"Lấy dữ liệu thất bại: {str(e)}"
                 }, status=400)
+        
+        per_page_options = [10, 25, 50, 100]
+        per_page = request.GET.get('per_page', 25)
+        
+        file_path = os.path.join(settings.MEDIA_ROOT, 'kc_local_uploads', 'stock_coffee_data.json')
+        with open(file_path, 'r') as f:
+            raw_data = json.load(f)
 
+        formatted_data = []
+        for item in reversed(raw_data):
+            formatted_data.append({
+                'date': item[0],
+                'stock': item[1]
+            })
+        paginator = Paginator(formatted_data, per_page)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
-        return render(request, 'market-agent/get-kc-stock-data.html')
+        return render(request, 'market-agent/get-kc-stock-data.html', {
+            'datas': page_obj, 
+            'per_page_options': per_page_options, 
+            'per_page': int(per_page),
+        })
 
 class RCDataStockView(View):
     def post(request):
@@ -211,4 +232,69 @@ class RCDataStockView(View):
                     "status": "error",
                     "message": f"Lấy dữ liệu thất bại: {str(e)}"
                 }, status=400)
-        return render(request, 'market-agent/get-rc-stock-data.html')
+        per_page_options = [10, 25, 50, 100]
+
+        per_page = request.GET.get('per_page', 25)
+        datas = IceRCStockData.objects.all().order_by('-date')
+
+        paginator = Paginator(datas, per_page)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        today = datetime.now().date()
+        return render(request, 'market-agent/get-rc-stock-data.html', {'datas': page_obj, 'per_page_options': per_page_options, 'per_page': int(per_page), 'today': today})
+
+class GetBrazilForecastData(View):
+    def post(request):
+        if request.method == 'POST':
+            try:
+                timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M')
+                json_files = [
+                    os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', 'espirito_santo.json'),
+                    os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', 'minas_gerais.json'),
+                    os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', 'parana.json'),
+                    os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', 'rondonia.json'),
+                    os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', 'sao_paulo.json'),
+                    os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', 'bahia.json'),
+                ]
+                output_file = f"brazil_forecast_{timestamp}.xlsx"
+                output_path = os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', output_file)
+                with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+                    for file_path in json_files:
+                        # 1. Đọc dữ liệu từ file JSON
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+                        
+                        # 2. Trích xuất các trường thông tin cần thiết
+                        extracted_data = []
+                        for entry in data:
+                            extracted_data.append({
+                                "ngày": entry['start'][:10], # Lấy 10 ký tự đầu (YYYY-MM-DD)
+                                "temperature_min": entry['temperature']['min'],
+                                "temperature_max": entry['temperature']['max'],
+                                "precipitation": entry['precipitation']['value'],
+                                "symbol_night": entry['sixHourSymbols'][0],
+                                "symbol_morning": entry['sixHourSymbols'][1],
+                                "symbol_afternoon": entry['sixHourSymbols'][2],
+                                "symbol_evening": entry['sixHourSymbols'][3],
+                            })
+                        # 3. Chuyển đổi sang DataFrame của Pandas
+                        df = pd.DataFrame(extracted_data)
+                        
+                        # 4. Lấy tên vùng từ tên file
+                        sheet_name = os.path.splitext(os.path.basename(file_path))[0]
+                        
+                        # 5. Ghi DataFrame vào sheet tương ứng
+                        df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+                return JsonResponse({
+                        "status": "success",
+                        "message": "Lấy dữ liệu thành công!",
+                        "result": f"/media/brazil_forecast/{output_file}"
+                    }, status=200)
+            except Exception as e:
+                return JsonResponse({
+                    "status": "error",
+                    "message": f"Lấy dữ liệu thất bại: {str(e)}"
+                }, status=400)
+
+        return render(request, 'market-agent/get-brazil-forecast.html')

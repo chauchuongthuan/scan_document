@@ -236,12 +236,14 @@ class NewsScanner:
         retries = 2
         for i in range(retries):
             try:
-                response = client.models.generate_content(
-                    model='gemini-2.0-flash', 
-                    contents=prompt
-                )
+                # response = client.models.generate_content(
+                #     model='gemini-2.0-flash', 
+                #     contents=prompt
+                # )
+                # text = response.text.strip()
                 
-                text = response.text.strip()
+                response = ""
+                text = response.strip()
                 if "```json" in text:
                     text = text.split("```json")[1].split("```")[0]
                 elif "```" in text:

@@ -25,6 +25,7 @@ class TVGetDatafeedView(View):
                 symbol_text = request.POST.get('symbol', '')
                 n_bars_input = request.POST.get('n_bars', 10000)
                 interval_input_text = request.POST.get('interval', '')
+                save_change = request.POST.get('save_change', 'false')
                 if symbol_text == "":
                     return JsonResponse({
                         "status": "error",
@@ -35,11 +36,15 @@ class TVGetDatafeedView(View):
                     interval_input = Interval.in_daily
                 elif interval_input_text == "in_1_minute":
                     interval_input = Interval.in_1_minute
+                elif interval_input_text == "in_monthly":
+                    interval_input = Interval.in_monthly
 
-                if symbol_text == "KCH2026": # Cuối tháng 1 đổi sang KCK
+                if symbol_text == "KCH2026":
                     exchange_text = "ICEUS"
                 elif symbol_text == "RCH2026":
                     exchange_text = "ICEEUR"
+                elif symbol_text == "VNFER":
+                    exchange_text = "ECONOMICS"
                 else:
                     exchange_text = "ICEUS"
 
@@ -51,31 +56,33 @@ class TVGetDatafeedView(View):
                 )
                 
                 print(df)
-                # if df is not None:
-                #     df = df.reset_index()
-                #     for _, row in df.iterrows():
-                #         naive_dt = row['datetime']
-                #         timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh'))
-                #         if symbol_text == "KCH2026":
-                #             OHLCDataKC.objects.update_or_create(
-                #                 symbol=symbol_text,
-                #                 timestamp=timezone_dt,
-                #                 defaults={
-                #                     'open': row['open'], 'high': row['high'],
-                #                     'low': row['low'], 'close': row['close'],
-                #                     'volume': row['volume']
-                #                 }
-                #             )
-                #         elif symbol_text == "RCH2026":
-                #             OHLCDataRC.objects.update_or_create(
-                #                 symbol=symbol_text,
-                #                 timestamp=timezone_dt,
-                #                 defaults={
-                #                     'open': row['open'], 'high': row['high'],
-                #                     'low': row['low'], 'close': row['close'],
-                #                     'volume': row['volume']
-                #                 }
-                #             )
+                if save_change == 'true':
+                    if df is not None:
+                        df = df.reset_index()
+                        for _, row in df.iterrows():
+                            naive_dt = row['datetime']
+                            timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh'))
+                            if symbol_text == "KCH2026":
+                                OHLCDataKC.objects.update_or_create(
+                                    symbol=symbol_text,
+                                    timestamp=timezone_dt,
+                                    defaults={
+                                        'open': row['open'], 'high': row['high'],
+                                        'low': row['low'], 'close': row['close'],
+                                        'volume': row['volume']
+                                    }
+                                )
+                            elif symbol_text == "RCH2026":
+                                OHLCDataRC.objects.update_or_create(
+                                    symbol=symbol_text,
+                                    timestamp=timezone_dt,
+                                    defaults={
+                                        'open': row['open'], 'high': row['high'],
+                                        'low': row['low'], 'close': row['close'],
+                                        'volume': row['volume']
+                                    }
+                                )
+                
                         
                 output_file = f"data_{symbol_text}_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')}.xlsx"
                 output_path = os.path.join(settings.MEDIA_ROOT, 'tvdatafeed', output_file)
@@ -113,7 +120,7 @@ class TVUnfilledGapView(View):
                         "message": "Symbol is required"
                     }, status=400)
                 
-                if symbol_text == "KCH2026": # Cuối tháng 1 đổi sang KCK
+                if symbol_text == "KCH2026":
                     exchange_text = "ICEUS"
                 elif symbol_text == "RCH2026":
                     exchange_text = "ICEEUR"

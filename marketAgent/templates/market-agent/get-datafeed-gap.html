@@ -18,8 +18,15 @@
     </ol>
     <div class="panel">
     <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
-        Get datafeed (Cuối tháng 1 KCH -> KCK)
+        Get datafeed 
     </h5>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="hidden fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 w-full h-full">
+        <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span class="text-lg font-medium">Đang xử lý...</span>
+        </div>
+    </div>
     <div>
         <form
             id="postForm"
@@ -104,7 +111,7 @@
     function submitForm(event) {
         const postForm = document.getElementById('postForm');
         event.preventDefault();
-
+        showLoadingScreen();
         formData = new FormData(postForm);
         fetch(postForm.action, {
             method: 'POST',
@@ -123,11 +130,20 @@
                     window.location.reload();
                 }, 1500);
             }
+            hideLoadingScreen();
         })
         .catch(error => {
             console.error('Error:', error);
             showMessage('Submit failed', 'error');
+            hideLoadingScreen();
         });
+    }
+    function showLoadingScreen() {
+        document.getElementById('loadingScreen').classList.remove('hidden');
+    }
+
+    function hideLoadingScreen() {
+        document.getElementById('loadingScreen').classList.add('hidden');
     }
 </script>
 {% endblock %}

@@ -14,22 +14,12 @@
                 </svg>
             </a>
         </li>
-        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Hợp đồng</a></li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Daily RC</a></li>
     </ol>
     <div class="panel">
-        <div class="flex items-center justify-between mb-4">
-            <!-- Search Form -->
-            <form method="GET" action="{% url 'document-list' %}" class="flex items-center w-9/12 mr-2">
-                <input type="text" 
-                       name="name_search" 
-                       placeholder="Comco ref or Buyer ref" 
-                       class="form-input w-2/12 mr-2" 
-                       value="{{ request.GET.name_search }}">
-                <button type="submit" class="btn btn-primary ml-2 w-2/12" style="justify-items: flex-end;">Tìm kiếm</button>
-            </form>
-            
+        <div class="flex items-center justify-end gap-4 mb-4">
             <!-- Add Button -->
-            <a href="{% url 'document-create' %}" class="btn btn-primary w-1/12">
+            <a href="{% url 'daily-ohlc-rc-create' %}" class="btn btn-primary w-1/12">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -67,33 +57,49 @@
         <table class="table-striped table-hover"> 
             <thead> 
                 <tr> 
-                    <th>Comco ref</th> 
-                    <th>Buyer ref</th> 
-                    <th>Contract date</th> 
-                    <th>Price</th> 
+                    <th class="!text-center">Date</th> 
+                    <th class="!text-center">Open</th> 
+                    <th class="!text-center">High</th> 
+                    <th class="!text-center">Low</th> 
+                    <th class="!text-center">Close</th> 
+                    <th class="!text-center">Vola Open</th> 
+                    <th class="!text-center">Vola High</th> 
+                    <th class="!text-center">Vola Low</th> 
+                    <th class="!text-center">Vola Close</th> 
+                    <th class="!text-center">STDEV O</th> 
+                    <th class="!text-center">STDEV H</th> 
+                    <th class="!text-center">STDEV L</th> 
+                    <th class="!text-center">STDEV C</th> 
                     <th class="!text-center">Actions</th> 
                 </tr> 
             </thead> 
             <tbody> 
                 {% csrf_token %} 
-                {% for document in documents %} 
+                {% for daily_data in daily_datas %} 
                 <tr> 
-                    <td>{{ document.comco_ref }}</td> 
-                    <td>{{ document.buyer_ref }}</td> 
-                    <td>{{ document.contract_date }}</td> 
-                    <td>{{ document.price }}</td> 
-                    
+                    <td class="!text-center">{{ daily_data.timestamp|date:"Y-m-d" }}</td> 
+                    <td class="!text-center">{{ daily_data.open }}</td> 
+                    <td class="!text-center">{{ daily_data.high }}</td> 
+                    <td class="!text-center">{{ daily_data.low }}</td> 
+                    <td class="!text-center">{{ daily_data.close }}</td> 
+                    <td class="!text-center">{{ daily_data.volatility_open|floatformat:1 }}%</td> 
+                    <td class="!text-center">{{ daily_data.volatility_high|floatformat:1 }}%</td> 
+                    <td class="!text-center">{{ daily_data.volatility_low|floatformat:1 }}%</td> 
+                    <td class="!text-center">{{ daily_data.volatility_close|floatformat:1 }}%</td> 
+                    <td class="!text-center">{{ daily_data.stdev_vol_open_20_days|floatformat:1 }}%</td> 
+                    <td class="!text-center">{{ daily_data.stdev_vol_high_20_days|floatformat:1 }}%</td> 
+                    <td class="!text-center">{{ daily_data.stdev_vol_low_20_days|floatformat:1 }}%</td> 
+                    <td class="!text-center">{{ daily_data.stdev_vol_close_20_days|floatformat:1 }}%</td> 
                     <td class="!text-center"> 
                         <div class="flex items-center justify-center gap-4"> 
-                            <a href="{% url 'document-update' document.pk %}" class="btn btn-sm btn-outline-primary"> Edit </a> 
-                            <button class="btn btn-sm btn-outline-danger" data-delete-url="{% url 'document-delete' document.pk %}" data-name="{{ document.comco_ref }}" onclick="showDeleteConfirmation(this)"> Delete </button> 
+                            <button class="btn btn-sm btn-outline-danger" data-delete-url="{% url 'daily-ohlc-rc-delete' daily_data.pk %}" data-name="{{ daily_data.timestamp|date:'Y-m-d' }}" onclick="showDeleteConfirmation(this)"> Delete </button> 
                         </div> 
                     </td> 
                 </tr> 
                 {% endfor %} 
             </tbody> 
         </table>
-        {% if documents.has_other_pages %}
+        {% if daily_datas.has_other_pages %}
         <div class="flex items-center justify-between border-t border-[#e0e6ed] px-4 py-4 dark:border-[#1b2e4b]">
             <div class="flex items-center gap-3 w-[300px]">
                 <form id="perPageForm" method="get" class="flex items-center">
@@ -104,10 +110,10 @@
                     </select>
                     <input type="hidden" name="search" value="{{ search_query }}">
                 </form>
-                <p>Hiển thị {{ documents.start_index }} đến {{ documents.end_index }} trên {{ documents.paginator.count }}</p>
+                <p>Hiển thị {{ daily_datas.start_index }} đến {{ daily_datas.end_index }} trên {{ daily_datas.paginator.count }}</p>
             </div>
             <ul class="inline-flex items-center gap-1">
-                {% if documents.has_previous %}
+                {% if daily_datas.has_previous %}
                     <li class="pager">
                         <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
@@ -124,28 +130,28 @@
                         </a>
                     </li>
                 {% endif %}
-                {% for i in documents.paginator.page_range %}
-                    {% if documents.number == i %}
+                {% for i in daily_datas.paginator.page_range %}
+                    {% if daily_datas.number == i %}
                         <li class="pager">
                             <a href="#" aria-current="page" class="flex items-center justify-center rounded bg-primary px-3.5 py-2 font-semibold text-white transition dark:bg-primary dark:text-white-light">{{ i }}</a>
                         </li>
-                    {% elif i > documents.number|add:'-3' and i < documents.number|add:'3' %}
+                    {% elif i > daily_datas.number|add:'-3' and i < daily_datas.number|add:'3' %}
                         <li class="pager">
                             <a href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light px-3.5 py-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">{{ i }}</a>
                         </li>
                     {% endif %}
                 {% endfor %}
 
-                {% if documents.has_next %}
+                {% if daily_datas.has_next %}
                     <li class="pager">
-                        <a href="?page={{ documents.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                        <a href="?page={{ daily_datas.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
                                 <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </a>
                     </li>
                     <li class="pager">
-                        <a href="?page={{ documents.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                        <a href="?page={{ daily_datas.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
                                 <path d="M11 19L17 12L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path opacity="0.5" d="M6.99976 19L12.9998 12L6.99976 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -181,7 +187,7 @@
             toast: true,
             position: 'top-end',
             showConfirmButton: false,
-            timer: 3000,
+            timer: 1000,
             didClose: () => {
                 window.location.reload();
             }
@@ -206,7 +212,7 @@
         const formData = new FormData(this);
 
         try {
-            const response = await fetch("{% url 'document-import-excel' %}", {
+            const response = await fetch("{% url 'daily-ohlc-rc-import-excel' %}", {
                 method: "POST",
                 body: formData,
                 headers: {
@@ -245,7 +251,7 @@
         });
     }
     async function exportExcel() {
-        const response = await fetch('{% url "document-export-excel" %}', {
+        const response = await fetch('{% url "daily-ohlc-rc-export-excel" %}', {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
@@ -261,7 +267,7 @@
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = `schedule_export.xlsx`;
+            a.download = `daily_ohlc_rc_export_${new Date().toISOString().split('T')[0]}.xlsx`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
