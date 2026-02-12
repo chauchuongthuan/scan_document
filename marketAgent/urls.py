@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import SearchGGView, KCDataStockJsonToExcel, RCDataStockView
+from .views import SearchGGView, KCDataStockJsonToExcel, RCDataStockView, GetBrazilForecastData
 from .create_prompt_views import CreatePromptView
 from .ft_search_views import FTSearchView
 from .afr_search_views import AfrSearchView
@@ -27,4 +27,6 @@ urlpatterns = [
     path('export-kc-stock-data', KCDataStockJsonToExcel.post, name='export-kc-stock-data'),
 
     path('export-rc-stock-data', RCDataStockView.post, name='export-rc-stock-data'),
+
+    path('get-brazil-forecast', GetBrazilForecastData.post, name='get-brazil-forecast'),
 ]

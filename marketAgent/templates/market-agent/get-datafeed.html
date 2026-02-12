@@ -18,8 +18,15 @@
     </ol>
     <div class="panel">
     <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
-        Get datafeed (Cuối tháng 1 KCH -> KCK)
+        Get datafeed 
     </h5>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="hidden fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 w-full h-full">
+        <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span class="text-lg font-medium">Đang xử lý...</span>
+        </div>
+    </div>
     <div>
         <form
             id="postForm"
@@ -31,7 +38,6 @@
             {% csrf_token %}
             <div class="flex flex-col md:flex-row gap-8">
                 <div class="w-full space-y-6">
-                    <!-- Comco ref, Buyer ref, Contract date, Price -->
                     <div class="grid grid-cols-1 gap-4">
                         <div class="grid grid-cols-1 gap-4">
                             <div>
@@ -44,12 +50,13 @@
                                     >
                                         <option value="KCH2026">KCH2026</option>
                                         <option value="RCH2026">RCH2026</option>
-                                        <option value="KCZ2025">KCZ2025</option>
+                                        <option value="VNFER">VNFER</option>
+                                        <!-- <option value="KCZ2025">KCZ2025</option>
                                         <option value="KCK2026">KCK2026</option>
                                         <option value="KCN2026">KCN2026</option>
                                         <option value="KCU2026">KCU2026</option>
                                         <option value="KCZ2026">KCZ2026</option>
-                                        <option value="KCH2027">KCH2027</option>
+                                        <option value="KCH2027">KCH2027</option> -->
                                     </select>
                                 </div>
                             </div>
@@ -63,6 +70,7 @@
                                     >
                                         <option value="in_1_minute">1 Minute</option>
                                         <option value="in_daily">Daily</option>
+                                        <option value="in_monthly">Monthly</option>
                                     </select>
                                 </div>
                             </div>
@@ -76,6 +84,19 @@
                                         class="form-input"
                                         value="10000"
                                     ></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mt-2" for="save_change">Save DB</label>
+                                <div class="flex items-center gap-2">
+                                    <select
+                                        id="save_change"
+                                        name="save_change"
+                                        class="form-input"
+                                    >
+                                        <option value="false">No</option>
+                                        <option value="true">Yes</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -110,7 +131,7 @@
     function submitForm(event) {
         const postForm = document.getElementById('postForm');
         event.preventDefault();
-
+        showLoadingScreen();
         formData = new FormData(postForm);
         fetch(postForm.action, {
             method: 'POST',
@@ -129,11 +150,20 @@
                     window.location.reload();
                 }, 1500);
             }
+            hideLoadingScreen();
         })
         .catch(error => {
             console.error('Error:', error);
+            hideLoadingScreen();
             showMessage('Submit failed', 'error');
         });
+    }
+    function showLoadingScreen() {
+        document.getElementById('loadingScreen').classList.remove('hidden');
+    }
+
+    function hideLoadingScreen() {
+        document.getElementById('loadingScreen').classList.add('hidden');
     }
 </script>
 {% endblock %}

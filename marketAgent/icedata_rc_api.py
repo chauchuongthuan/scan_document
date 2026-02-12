@@ -25,15 +25,15 @@ except AttributeError:
 
 def extract_grand_total_rc(df: pd.DataFrame, column_name: str) -> str | None:
     """
-    Tìm hàng có giá trị cột đầu tiên là 'GrandTotal' và trích xuất giá trị 
+    Tìm hàng có giá trị cột đầu tiên là 'GrandTotal' hoặc 'Grand Total' và trích xuất giá trị 
     từ cột được chỉ định.
     """
     try:
         # Lấy tên cột đầu tiên (thường là 'Commodity' trong file RC)
         first_col = df.columns[0]
         
-        # 1. Tìm hàng 'GrandTotal'
-        grand_total_row = df[df[first_col].astype(str).str.contains('GrandTotal', case=False, na=False)]
+        # 1. Tìm hàng 'GrandTotal' hoặc 'Grand Total'
+        grand_total_row = df[df[first_col].astype(str).str.contains('GrandTotal|Grand Total', case=False, na=False)]
         
         if grand_total_row.empty:
             return None
@@ -73,22 +73,36 @@ def process_local_rc_files(file_paths: list[str]):
         'success_count': 0, 
         'error_count': 0, 
         'total_files': len(file_paths), 
-        'processed_files': []
+        'processed_files': [],
+        'error_name_file': ''
     }
     
     COLUMN_NAMES = {
         'lots_with_val_cert': 'LotsWithValCert',
         'lots_non_tend': 'LotsNonTend',
-        'lots_suspended': 'LotsSuspended'
+        'lots_suspended': 'LotsSuspended',
+        'lots_combined': 'LotsCombined',
     }
+    print("length file_paths", len(file_paths))
 
+    duplicate_date = []
     for file_path in file_paths:
         
         file_name = os.path.basename(file_path)
         file_date = extract_date_from_filename(file_name)
         
+        # check duplicate date
+        if file_date in duplicate_date:
+            results['error_count'] += 1
+            results['error_name_file'] += f"{file_name} duplicate, "
+            results['processed_files'].append({'file': file_name, 'status': 'Error: Duplicate Date'})
+            print("Duplicate date:", file_date, file_name)
+            continue
+        duplicate_date.append(file_date)
+        
         if file_date is None:
             results['error_count'] += 1
+            results['error_name_file'] += f"{file_name} invalid date, "
             results['processed_files'].append({'file': file_name, 'status': 'Error: Invalid Date in Filename'})
             continue
             
@@ -99,11 +113,15 @@ def process_local_rc_files(file_paths: list[str]):
             # 2. Trích xuất giá trị GrandTotal
             lots_with_val_cert_value = extract_grand_total_rc(df, COLUMN_NAMES['lots_with_val_cert'])
             lots_non_tend_value = extract_grand_total_rc(df, COLUMN_NAMES['lots_non_tend'])
-            lots_suspended_value = extract_grand_total_rc(df, COLUMN_NAMES['lots_suspended'])
-            
+            lots_suspended_value = None
+            if COLUMN_NAMES['lots_suspended'] in df.columns:
+                lots_suspended_value = extract_grand_total_rc(df, COLUMN_NAMES['lots_suspended'])
+            elif COLUMN_NAMES['lots_combined'] in df.columns:
+                lots_suspended_value = extract_grand_total_rc(df, COLUMN_NAMES['lots_combined'])
             # 3. Kiểm tra và lưu vào Database
             if lots_with_val_cert_value is None and lots_non_tend_value is None and lots_suspended_value is None:
                 results['error_count'] += 1
+                results['error_name_file'] += f"{file_name} data not found (missing GrandTotal), "
                 results['processed_files'].append({'file': file_name, 'status': 'Error: Data Not Found (Missing GrandTotal)'})
             else:
                 IceRCStockData.objects.update_or_create(
@@ -119,11 +137,12 @@ def process_local_rc_files(file_paths: list[str]):
 
         except FileNotFoundError:
             results['error_count'] += 1
+            results['error_name_file'] += f"{file_name} not found, "
             results['processed_files'].append({'file': file_name, 'status': 'Error: File Not Found'})
         except Exception as e:
             results['error_count'] += 1
+            results['error_name_file'] += f"{file_name} processing failed: {str(e)}, "
             results['processed_files'].append({'file': file_name, 'status': f'Error: Processing Failed ({str(e)})'})
-            
     return results
 
 class ImportLocalIceRCDataView(APIView): 

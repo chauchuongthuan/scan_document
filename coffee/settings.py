@@ -5,8 +5,7 @@ import pytesseract
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-MARKET_AGENT_DATA_DIR = os.path.join(BASE_DIR, 'market_agent_data')
-
+# print("BASE_DIR,", BASE_DIR) # D:\PER_WORKSPACE\scan_document
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -21,8 +20,6 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*").split(",")
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
-    'http://0.0.0.0:7070',
-    'http://localhost:7070',
 ]
 
 # Cấu hình Tesseract cho Linux (Docker)
@@ -41,8 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'django.contrib.humanize',
+    "django.contrib.humanize",
     "storages",
+    "django_crontab",
     "documents",
     "keywords",
     "entropyCalculator",
@@ -53,8 +51,13 @@ INSTALLED_APPS = [
     "quantumEngine",
     "quantumEngineV2",
     "chartOHLC",
+    "dailyOHLC",
+    "revenue",
 ]
 
+CRONJOBS = [
+    ('0 * * * *', 'revenue.cron.run_hourly_jobs'),
+]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",

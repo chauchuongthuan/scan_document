@@ -40,6 +40,8 @@ urlpatterns = [
     path('quantum-engine/', include('quantumEngine.urls')),
     path('quantum-engine-v2/', include('quantumEngineV2.urls')),
     path('chart-ohlc/', include('chartOHLC.urls')),
+    path('daily-ohlc/', include('dailyOHLC.urls')),
+    path('revenue/', include('revenue.urls')),
 
     # AUTH CMS
     path('cms/login/', LoginView.as_view(), name='login_cms'),

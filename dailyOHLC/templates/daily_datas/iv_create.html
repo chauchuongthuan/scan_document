@@ -1,0 +1,156 @@
+{% extends 'admin/layouts/admin.html' %} {% load static %} {% block content %}
+
+<div class="p-4">
+  <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+    <li>
+      <a
+        href="javascript:;"
+        class="hover:text-gray-500/70 dark:hover:text-white-dark/70"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 shrink-0"
+        >
+          <path
+            opacity="0.5"
+            d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z"
+            stroke="currentColor"
+            stroke-width="1.5"
+          ></path>
+          <path
+            d="M12 15L12 18"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </a>
+    </li>
+    <li class="before:content-['/'] before:px-1.5">
+      <a href="{% url 'daily-iv-list' %}">Daily Implied Volatility</a>
+    </li>
+    <li class="before:content-['/'] before:px-1.5">
+      <a
+        href="javascript:;"
+        class="text-black dark:text-white-light hover:text-black/70 dark:hover:text-white-light/70"
+        >Nhập liệu</a
+      >
+    </li>
+  </ol>
+  <div class="panel">
+    <div>
+      <form
+        id="documentForm"
+        method="post"
+        enctype="multipart/form-data"
+        action="{% url 'daily-iv-create' %}"
+        class="space-y-5"
+      >
+        {% csrf_token %}
+        <div class="flex flex-col md:flex-row gap-8">
+          <div class="w-full space-y-6">
+            <div id="group_timestamp">
+                <label class="mt-2" for="timestamp">Date</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="timestamp"
+                        type="date"
+                        name="timestamp"
+                        class="form-input"
+                    />
+                </div>
+              </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div id="group_implied_volatility_kc">
+                <label class="mt-2" for="implied_volatility_kc">KC</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="implied_volatility_kc"
+                        type="text"
+                        name="implied_volatility_kc"
+                        class="form-input"
+                    /> %
+                </div>
+              </div>
+              <div id="group_implied_volatility_rc">
+                <label class="mt-2" for="implied_volatility_rc">RC</label>
+                <div class="flex items-center gap-2">
+                    <input
+                        id="implied_volatility_rc"
+                        type="text"
+                        name="implied_volatility_rc"
+                        class="form-input"
+                    /> %
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button type="submit" onclick="submitForm(event)" class="btn btn-primary">Thêm mới</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script defer src="{% static 'cassets/js/sweetalert.min.js' %}"></script>
+<script>
+    function submitForm(event) {
+        const documentForm = document.getElementById('documentForm');
+        event.preventDefault();
+
+        const requiredFields = [
+            'timestamp',
+        ];
+        if (requiredFields.some(field => !documentForm[field].value)) {
+            requiredFields.forEach(field => {
+                if (!documentForm[field].value) {
+                    document.getElementById('group_' + field).classList.add('has-error');
+                }
+            });
+            showMessage("Please fill in all required fields.", "error");
+            return;
+        }
+        const formData = new FormData(documentForm);
+        
+        fetch(documentForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+        })
+        .then(response => response.json())
+        .then(data => {
+          showMessage(data.message, data.status);
+          if (data.status === 'success' && data.redirect) {
+              setTimeout(() => {
+              window.location.href = data.redirect;
+              }, 1000);
+          }
+        })
+        .catch(error => {
+        showMessage('An error occurred while processing your request.', 'error');
+        });
+    }
+    function showMessage(msg = '', type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+</script>
+{% endblock %}

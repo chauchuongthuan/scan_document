@@ -41,6 +41,7 @@
     }
 
     function loadChart() {
+        console.log("reload KC chart");
         fetch(`{% url 'get-chart-json-kc' %}`)
             .then(res => res.json())
             .then(data => {
@@ -54,8 +55,8 @@
             .catch(err => console.error("Lỗi tải dữ liệu:", err));
     }
 
-    // Cập nhật mỗi 15 phút
-    setInterval(loadChart, 900000);
+    // Cập nhật mỗi 5 phút
+    setInterval(loadChart, 300000);
 
     window.onload = () => {
         initChart();

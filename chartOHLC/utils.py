@@ -28,7 +28,7 @@ class GetDataEvery15Minutes(BaseCommand):
             symbol="KCH2026",
             exchange="ICEUS",
             interval=Interval.in_1_minute,
-            n_bars=15
+            n_bars=30
         )
         if df is not None:
             df = df.reset_index()
@@ -50,7 +50,7 @@ class GetDataEvery15Minutes(BaseCommand):
             symbol="RCH2026",
             exchange="ICEEUR",
             interval=Interval.in_1_minute,
-            n_bars=15
+            n_bars=30
         )
         if df is not None:
             df = df.reset_index()

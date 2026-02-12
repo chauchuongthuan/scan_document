@@ -1,0 +1,204 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'components/common/confirm_modal.html' %}
+{% load humanize %}
+<script src="{% static 'js/confirm_modal.js' %}"></script>
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Revenue by day</a></li>
+    </ol>
+    <div class="panel">
+    <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
+        Revenue by day
+    </h5>
+    <div>
+        <div>
+            <form
+                id="postForm"
+                method="post"
+                enctype="multipart/form-data"
+                action="{% url 'revenue-list' %}"
+                class="space-y-5"
+            >
+                {% csrf_token %}
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="mt-2" for="date">Start Date</label>
+                        <div class="flex items-center gap-2">
+                            <input
+                                id="start_date"
+                                type="date"
+                                name="start_date"
+                                class="form-input"
+                                value="{{yesterday | date:'Y-m-d'}}"
+                            ></input>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="mt-2" for="date">End Date</label>
+                        <div class="flex items-center gap-2">
+                            <input
+                                id="end_date"
+                                type="date"
+                                name="end_date"
+                                class="form-input"
+                                value="{{today | date:'Y-m-d'}}"
+                            ></input>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                <button type="submit" onclick="submitForm(event)" class="btn btn-primary">Get iPOS data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="panel">
+        <table class="table-striped table-hover"> 
+            <thead> 
+                <tr> 
+                    <th>Date</th>
+                    <th>Revenue</th>
+                    <th>Total of day</th>
+                </tr> 
+            </thead> 
+            <tbody> 
+                {% csrf_token %}
+                {% for data in datas %}
+                <tr>
+                    <td>{{ data.timestamp|date:"Y-m-d" }}</td>
+                    <td>{% for data in data.revenue_data %}
+                        <div>
+                            {% if data.total != 0 %}
+                                time: {{ data.time }} | total: {{ data.total|floatformat:0|intcomma }} đ
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {{ data.total_of_day|floatformat:0|intcomma }} đ
+                    </td>
+                </tr> 
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if datas.has_other_pages %}
+        <div class="flex items-center justify-between border-t border-[#e0e6ed] px-4 py-4 dark:border-[#1b2e4b]">
+            <div class="flex items-center gap-3 w-[300px]">
+                <form id="perPageForm" method="get" class="flex items-center">
+                    <select name="per_page" id="per_page" class="form-select w-[67px]" onchange="this.form.submit()">
+                        {% for option in per_page_options %}
+                            <option value="{{ option }}" {% if option == per_page %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="search" value="{{ search_query }}">
+                </form>
+                <p>Hiển thị {{ datas.start_index }} đến {{ datas.end_index }} trên {{ datas.paginator.count }}</p>
+            </div>
+            <ul class="inline-flex items-center gap-1">
+                {% if datas.has_previous %}
+                    <li class="pager">
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M13 19L7 12L13 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path opacity="0.5" d="M16.9998 19L10.9998 12L16.9998 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="pager">
+                        <a href="?page={{ pages.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M15 5L9 12L15 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                {% endif %}
+                {% for i in datas.paginator.page_range %}
+                    {% if datas.number == i %}
+                        <li class="pager">
+                            <a href="#" aria-current="page" class="flex items-center justify-center rounded bg-primary px-3.5 py-2 font-semibold text-white transition dark:bg-primary dark:text-white-light">{{ i }}</a>
+                        </li>
+                    {% elif i > datas.number|add:'-3' and i < datas.number|add:'3' %}
+                        <li class="pager">
+                            <a href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light px-3.5 py-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if datas.has_next %}
+                    <li class="pager">
+                        <a href="?page={{ datas.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="pager">
+                        <a href="?page={{ datas.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M11 19L17 12L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path opacity="0.5" d="M6.99976 19L12.9998 12L6.99976 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+    function showMessage(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1500,
+            didClose: () => {
+                window.location.reload();
+            }
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function submitForm(event) {
+        const postForm = document.getElementById('postForm');
+        event.preventDefault();
+
+        formData = new FormData(postForm);
+        fetch(postForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage(data.message, data.status);
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Submit failed', 'error');
+        });
+    }
+</script>
+{% endblock %}
