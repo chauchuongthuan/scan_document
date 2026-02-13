@@ -36,7 +36,7 @@ class SimpleKalman:
 # ==========================================
 def prepare_data():
     # Giả định các file CSV đã được load (Thay đổi đường dẫn nếu cần)
-    df_price = pd.read_excel("C:/Users/COMPUTER/Desktop/KC_DAILY.xlsx").assign(Date=lambda x: pd.to_datetime(x['Date']))
+    df_price = pd.read_excel("C:/Users/COMPUTER/Desktop/KCK_DAILY.xlsx").assign(Date=lambda x: pd.to_datetime(x['Date']))
     df_price = df_price.dropna(subset=['Close'])
     df_iv = pd.read_excel("C:/Users/COMPUTER/Desktop/IMPLIED_VOLATILITY.xlsx").assign(Date=lambda x: pd.to_datetime(x['Date']))
     df_stock = pd.read_excel("C:/Users/COMPUTER/Desktop/ice_kc_stock_data_export_full.xlsx")

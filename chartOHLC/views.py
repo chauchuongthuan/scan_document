@@ -18,7 +18,7 @@ class ChartView:
         now_local = timezone.localtime()
         # yesterday_local = now_local - timezone.timedelta(days=1)
         today_start = now_local.replace(hour=16, minute=0, second=0, microsecond=0)
-        symbol = request.GET.get('symbol', 'KCK2026')
+        symbol = request.GET.get('symbol', 'KCU2026')
 
         data = OHLCDataKC.objects.filter(
             symbol=symbol, 
@@ -47,7 +47,7 @@ class ChartView:
         now_local = timezone.localtime()
         # yesterday_local = now_local - timezone.timedelta(days=1)
         today_start = now_local.replace(hour=16, minute=0, second=0, microsecond=0)
-        symbol = request.GET.get('symbol', 'RCK2026')
+        symbol = request.GET.get('symbol', 'RCU2026')
         
         data = OHLCDataRC.objects.filter(
             symbol=symbol, 

@@ -27,7 +27,7 @@ class SimpleKalman:
 def prepare_data():
     # Load các file (Giữ nguyên logic của bạn)
     # Đọc giá Daily
-    df_price = pd.read_excel("C:/Users/COMPUTER/Desktop/KC_DAILY.xlsx")
+    df_price = pd.read_excel("C:/Users/COMPUTER/Desktop/KCK_DAILY.xlsx")
     df_price['Date'] = pd.to_datetime(df_price['Date'])
     
     # Đọc IV

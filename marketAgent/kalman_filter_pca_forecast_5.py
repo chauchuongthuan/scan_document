@@ -180,5 +180,5 @@ def run_market_forecast_system(entropy_today, vn_data={'R': 28, 'A': 1.6}, br_da
         traceback.print_exc()
 
 # --- CHẠY THỬ NGHIỆM ---
-# Nhập entropy hôm nay (ví dụ 0.7) dựa trên tóm tắt thị trường bạn đọc được
-run_market_forecast_system(entropy_today=0.9)
+# Nhập entropy hôm nay dựa trên tóm tắt thị trường bạn đọc được
+run_market_forecast_system(entropy_today=0.1)

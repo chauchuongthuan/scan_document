@@ -27,12 +27,12 @@
                 Tạo mới
             </a>
             <!-- Import Button -->
-            <button class="btn btn-primary w-1/12" onclick="showImportModal()">
+            <!-- <button class="btn btn-primary w-1/12" onclick="showImportModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M21 14a1 1 0 0 0-1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4a1 1 0 0 0-2 0v4a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-4a1 1 0 0 0-1-1Zm-9.71 1.71a1 1 0 0 0 .33.21a.94.94 0 0 0 .76 0a1 1 0 0 0 .33-.21l4-4a1 1 0 0 0-1.42-1.42L13 12.59V3a1 1 0 0 0-2 0v9.59l-2.29-2.3a1 1 0 1 0-1.42 1.42Z"/>
                 </svg>
                 Import
-            </button>
+            </button> -->
             <!-- Export Button -->
             <button class="btn btn-success w-1/12" onclick="exportExcel()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -66,6 +66,10 @@
                     <th class="!text-center">IV RCK</th> 
                     <th class="!text-center">RV KCK passed</th> 
                     <th class="!text-center">RV RCK passed</th> 
+                    <th class="!text-center">IV KCU</th> 
+                    <th class="!text-center">IV RCU</th> 
+                    <th class="!text-center">RV KCU passed</th> 
+                    <th class="!text-center">RV RCU passed</th> 
                     <th class="!text-center">Actions</th> 
                 </tr> 
             </thead> 
@@ -74,14 +78,18 @@
                 {% for daily_data in daily_datas %} 
                 <tr> 
                     <td class="!text-center">{{ daily_data.timestamp|date:"Y-m-d" }}</td> 
-                    <td class="!text-center">{{ daily_data.implied_volatility_kc|floatformat:2 }}%</td> 
-                    <td class="!text-center">{{ daily_data.implied_volatility_rc|floatformat:2 }}%</td> 
+                    <td class="!text-center">{{ daily_data.implied_volatility_kc|floatformat:2 }} {% if daily_data.implied_volatility_kc %} % {% endif %}</td> 
+                    <td class="!text-center">{{ daily_data.implied_volatility_rc|floatformat:2 }} {% if daily_data.implied_volatility_rc %} % {% endif %}</td> 
                     <td class="!text-center">{{ daily_data.realized_volatility_kc_has_passed|yesno:"Yes,No" }}</td>
                     <td class="!text-center">{{ daily_data.realized_volatility_rc_has_passed|yesno:"Yes,No" }}</td> 
-                    <td class="!text-center">{{ daily_data.implied_volatility_kck|floatformat:2 }}%</td> 
-                    <td class="!text-center">{{ daily_data.implied_volatility_rck|floatformat:2 }}%</td> 
+                    <td class="!text-center">{{ daily_data.implied_volatility_kck|floatformat:2 }} {% if daily_data.implied_volatility_kck %} % {% endif %}</td> 
+                    <td class="!text-center">{{ daily_data.implied_volatility_rck|floatformat:2 }} {% if daily_data.implied_volatility_rck %} % {% endif %}</td> 
                     <td class="!text-center">{{ daily_data.realized_volatility_kck_has_passed|yesno:"Yes,No" }}</td>
                     <td class="!text-center">{{ daily_data.realized_volatility_rck_has_passed|yesno:"Yes,No" }}</td> 
+                    <td class="!text-center">{{ daily_data.implied_volatility_kcu|floatformat:2 }} {% if daily_data.implied_volatility_kcu %} % {% endif %}</td> 
+                    <td class="!text-center">{{ daily_data.implied_volatility_rcu|floatformat:2 }} {% if daily_data.implied_volatility_rcu %} % {% endif %}</td> 
+                    <td class="!text-center">{{ daily_data.realized_volatility_kcu_has_passed|yesno:"Yes,No" }}</td>
+                    <td class="!text-center">{{ daily_data.realized_volatility_rcu_has_passed|yesno:"Yes,No" }}</td> 
                     <td class="!text-center"> 
                         <div class="flex items-center justify-center gap-4"> 
                             <button class="btn btn-sm btn-outline-danger" data-delete-url="{% url 'daily-iv-delete' daily_data.pk %}" data-name="{{ daily_data.timestamp|date:'Y-m-d' }}" onclick="showDeleteConfirmation(this)"> Delete </button> 
