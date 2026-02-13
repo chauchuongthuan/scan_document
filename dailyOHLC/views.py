@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.utils.text import slugify
 
-from .models import OHLCDataKCDaily, OHLCDataRCDaily, ImpliedVolatility
+from .models import OHLCDataKCDaily, OHLCDataRCDaily, OHLCDataKCKDaily, OHLCDataRCKDaily, ImpliedVolatility
 from django.utils import timezone
 import os
 from django.core.files.storage import default_storage
@@ -578,6 +578,8 @@ class ImpliedVolatilityView:
         for data in daily_datas:
             data.implied_volatility_rc = data.implied_volatility_rc * 100 if data.implied_volatility_rc is not None else None
             data.implied_volatility_kc = data.implied_volatility_kc * 100 if data.implied_volatility_kc is not None else None
+            data.implied_volatility_rck = data.implied_volatility_rck * 100 if data.implied_volatility_rck is not None else None
+            data.implied_volatility_kck = data.implied_volatility_kck * 100 if data.implied_volatility_kck is not None else None
         
         paginator = Paginator(daily_datas, per_page)
         page_number = request.GET.get('page')
@@ -592,6 +594,7 @@ class ImpliedVolatilityView:
                 # Lấy dữ liệu từ request.POST
                 timestamp_str = request.POST.get('timestamp')
                 input_date = timezone.make_aware(datetime.datetime.strptime(timestamp_str, '%Y-%m-%d'))
+
                 implied_volatility_rc = round(float(request.POST.get('implied_volatility_rc')) / 100, 4) if request.POST.get('implied_volatility_rc') else None
                 implied_volatility_kc = round(float(request.POST.get('implied_volatility_kc')) / 100, 4) if request.POST.get('implied_volatility_kc') else None
                 implied_volatility_kck = round(float(request.POST.get('implied_volatility_kck')) / 100, 4) if request.POST.get('implied_volatility_kck') else None
@@ -602,59 +605,63 @@ class ImpliedVolatilityView:
                 kck_passed = False
                 rck_passed = False
 
-                # Kiểm tra điều kiện cho RC (Robusta Coffee)
-                ohlc_rc = OHLCDataRCDaily.objects.filter(timestamp=input_date).first()
-                if ohlc_rc:
-                    # Lấy tất cả các chỉ số STDEV, lọc bỏ giá trị None
-                    stdev_values_rc = [
-                        ohlc_rc.stdev_vol_open_20_days,
-                        ohlc_rc.stdev_vol_high_20_days,
-                        ohlc_rc.stdev_vol_low_20_days,
-                        ohlc_rc.stdev_vol_close_20_days
-                    ]
-                    # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rc
-                    if any(v is not None and v > implied_volatility_rc for v in stdev_values_rc):
-                        rc_passed = True
+                # Kiểm tra điều kiện cho RC (Robusta Coffee Mar)
+                if implied_volatility_rc:
+                    ohlc_rc = OHLCDataRCDaily.objects.filter(timestamp__date=input_date).first()
+                    if ohlc_rc:
+                        # Lấy tất cả các chỉ số STDEV, lọc bỏ giá trị None
+                        stdev_values_rc = [
+                            ohlc_rc.stdev_vol_open_20_days,
+                            ohlc_rc.stdev_vol_high_20_days,
+                            ohlc_rc.stdev_vol_low_20_days,
+                            ohlc_rc.stdev_vol_close_20_days
+                        ]
+                        # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rc
+                        if any(v is not None and v > implied_volatility_rc for v in stdev_values_rc):
+                            rc_passed = True
 
-                # Kiểm tra điều kiện cho KC (Arabica Coffee)
-                ohlc_kc = OHLCDataKCDaily.objects.filter(timestamp=input_date).first()
-                if ohlc_kc:
-                    stdev_values_kc = [
-                        ohlc_kc.stdev_vol_open_20_days,
-                        ohlc_kc.stdev_vol_high_20_days,
-                        ohlc_kc.stdev_vol_low_20_days,
-                        ohlc_kc.stdev_vol_close_20_days
-                    ]
-                    # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
-                    if any(v is not None and v > implied_volatility_kc for v in stdev_values_kc):
-                        kc_passed = True
+                # Kiểm tra điều kiện cho KC (Arabica Coffee Mar)
+                if implied_volatility_kc:
+                    ohlc_kc = OHLCDataKCDaily.objects.filter(timestamp__date=input_date).first()
+                    if ohlc_kc:
+                        stdev_values_kc = [
+                            ohlc_kc.stdev_vol_open_20_days,
+                            ohlc_kc.stdev_vol_high_20_days,
+                            ohlc_kc.stdev_vol_low_20_days,
+                            ohlc_kc.stdev_vol_close_20_days
+                        ]
+                        # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
+                        if any(v is not None and v > implied_volatility_kc for v in stdev_values_kc):
+                            kc_passed = True
                 
-                # Kiểm tra điều kiện cho KCK (Arabica Coffee)
-                ohlc_kck = OHLCDataKCKDaily.objects.filter(timestamp=input_date).first()
-                if ohlc_kck:
-                    stdev_values_kck = [
-                        ohlc_kck.stdev_vol_open_20_days,
-                        ohlc_kck.stdev_vol_high_20_days,
-                        ohlc_kck.stdev_vol_low_20_days,
-                        ohlc_kck.stdev_vol_close_20_days
-                    ]
-                    # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
-                    if any(v is not None and v > implied_volatility_kck for v in stdev_values_kck):
-                        kck_passed = True
+                # Kiểm tra điều kiện cho KCK (Arabica Coffee May)
+                if implied_volatility_kck:
+                    ohlc_kck = OHLCDataKCKDaily.objects.filter(timestamp__date=input_date).first()
+                    if ohlc_kck:
+                        stdev_values_kck = [
+                            ohlc_kck.stdev_vol_open_20_days,
+                            ohlc_kck.stdev_vol_high_20_days,
+                            ohlc_kck.stdev_vol_low_20_days,
+                            ohlc_kck.stdev_vol_close_20_days
+                        ]
+                        # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
+                        if any(v is not None and v > implied_volatility_kck for v in stdev_values_kck):
+                            kck_passed = True
 
-                # Kiểm tra điều kiện cho RC (Robusta Coffee)
-                ohlc_rck = OHLCDataRCDaily.objects.filter(timestamp=input_date).first()
-                if ohlc_rck:
-                    # Lấy tất cả các chỉ số STDEV, lọc bỏ giá trị None
-                    stdev_values_rck = [
-                        ohlc_rck.stdev_vol_open_20_days,
-                        ohlc_rck.stdev_vol_high_20_days,
-                        ohlc_rck.stdev_vol_low_20_days,
-                        ohlc_rck.stdev_vol_close_20_days
-                    ]
-                    # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rck
-                    if any(v is not None and v > implied_volatility_rck for v in stdev_values_rck):
-                        rck_passed = True
+                # Kiểm tra điều kiện cho RC (Robusta Coffee May)
+                if implied_volatility_rck:
+                    ohlc_rck = OHLCDataRCKDaily.objects.filter(timestamp__date=input_date).first()
+                    if ohlc_rck:
+                        # Lấy tất cả các chỉ số STDEV, lọc bỏ giá trị None
+                        stdev_values_rck = [
+                            ohlc_rck.stdev_vol_open_20_days,
+                            ohlc_rck.stdev_vol_high_20_days,
+                            ohlc_rck.stdev_vol_low_20_days,
+                            ohlc_rck.stdev_vol_close_20_days
+                        ]
+                        # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rck
+                        if any(v is not None and v > implied_volatility_rck for v in stdev_values_rck):
+                            rck_passed = True
                 iv_daily = ImpliedVolatility(
                     timestamp=input_date,
                     implied_volatility_rc=implied_volatility_rc,

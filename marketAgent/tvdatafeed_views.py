@@ -41,7 +41,15 @@ class TVGetDatafeedView(View):
 
                 if symbol_text == "KCH2026":
                     exchange_text = "ICEUS"
+                elif symbol_text == "KCK2026":
+                    exchange_text = "ICEUS"
                 elif symbol_text == "RCH2026":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "RCK2026":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "KCU2026":
+                    exchange_text = "ICEUS"
+                elif symbol_text == "RCU2026":
                     exchange_text = "ICEEUR"
                 elif symbol_text == "VNFER":
                     exchange_text = "ECONOMICS"
@@ -56,32 +64,33 @@ class TVGetDatafeedView(View):
                 )
                 
                 print(df)
-                if save_change == 'true':
-                    if df is not None:
-                        df = df.reset_index()
-                        for _, row in df.iterrows():
-                            naive_dt = row['datetime']
-                            timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh'))
-                            if symbol_text == "KCH2026":
-                                OHLCDataKC.objects.update_or_create(
-                                    symbol=symbol_text,
-                                    timestamp=timezone_dt,
-                                    defaults={
-                                        'open': row['open'], 'high': row['high'],
-                                        'low': row['low'], 'close': row['close'],
-                                        'volume': row['volume']
-                                    }
-                                )
-                            elif symbol_text == "RCH2026":
-                                OHLCDataRC.objects.update_or_create(
-                                    symbol=symbol_text,
-                                    timestamp=timezone_dt,
-                                    defaults={
-                                        'open': row['open'], 'high': row['high'],
-                                        'low': row['low'], 'close': row['close'],
-                                        'volume': row['volume']
-                                    }
-                                )
+                if save_change == 'true' and df is not None:
+                    df = df.reset_index().drop_duplicates(subset=['datetime'], keep='last')
+                    # Chuẩn bị danh sách objects
+                    objs = []
+                    for _, row in df.iterrows():
+                        naive_dt = row['datetime']
+                        timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh')).replace(microsecond=0)
+                        model_class = OHLCDataKC if symbol_text in ["KCH2026", "KCK2026"] else OHLCDataRC
+                        objs.append(model_class(
+                            symbol=symbol_text,
+                            timestamp=timezone_dt,
+                            open=row['open'],
+                            high=row['high'],
+                            low=row['low'],
+                            close=row['close'],
+                            volume=row['volume']
+                        ))
+
+                    # Thực hiện upsert (update if conflict) hàng loạt
+                    if objs:
+                        model_class = objs[0].__class__
+                        model_class.objects.bulk_create(
+                            objs,
+                            update_conflicts=True,
+                            unique_fields=['symbol', 'timestamp'],
+                            update_fields=['open', 'high', 'low', 'close', 'volume']
+                        )
                 
                         
                 output_file = f"data_{symbol_text}_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')}.xlsx"
@@ -122,7 +131,15 @@ class TVUnfilledGapView(View):
                 
                 if symbol_text == "KCH2026":
                     exchange_text = "ICEUS"
+                elif symbol_text == "KCK2026":
+                    exchange_text = "ICEUS"
                 elif symbol_text == "RCH2026":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "RCK2026":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "KCU2026":
+                    exchange_text = "ICEUS"
+                elif symbol_text == "RCU2026":
                     exchange_text = "ICEEUR"
                 else:
                     exchange_text = "ICEUS"

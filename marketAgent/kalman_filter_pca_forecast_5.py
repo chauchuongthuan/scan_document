@@ -14,7 +14,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 # 1. CẤU HÌNH ĐƯỜNG DẪN FILE (Sửa lại nếu cần)
 # ==========================================
 PATH_CONFIG = {
-    'price': "C:/Users/COMPUTER/Desktop/KC_DAILY.xlsx",
+    'price': "C:/Users/COMPUTER/Desktop/KCK_DAILY.xlsx",
     'iv': "C:/Users/COMPUTER/Desktop/IMPLIED_VOLATILITY.xlsx",
     'stock': "C:/Users/COMPUTER/Desktop/ice_kc_stock_data_export_full.xlsx",
     'cot': "C:/Users/COMPUTER/Desktop/Tong_Hop_CoT_Coffee_C.xlsx",
@@ -86,8 +86,8 @@ def run_market_forecast_system(entropy_today, vn_data={'R': 28, 'A': 1.6}, br_da
         sd_ratio = adj_production / (world_cons_file if world_cons_file != 0 else 1)
 
         # C. MERGE VÀ XỬ LÝ CHUỖI THỜI GIAN
-        df_price['Date'] = pd.to_datetime(df_price['Date'])
-        df_iv['Date'] = pd.to_datetime(df_iv['Date'])
+        df_price['Date'] = pd.to_datetime(df_price['Date'], dayfirst=True)
+        df_iv['Date'] = pd.to_datetime(df_iv['Date'], dayfirst=True)
         df_stock['Date'] = pd.to_datetime(df_stock['Date'])
         df_cot['Date'] = pd.to_datetime(df_cot['Report_Date_as_MM_DD_YYYY'])
 
@@ -181,4 +181,4 @@ def run_market_forecast_system(entropy_today, vn_data={'R': 28, 'A': 1.6}, br_da
 
 # --- CHẠY THỬ NGHIỆM ---
 # Nhập entropy hôm nay (ví dụ 0.7) dựa trên tóm tắt thị trường bạn đọc được
-run_market_forecast_system(entropy_today=0.86)
+run_market_forecast_system(entropy_today=0.9)

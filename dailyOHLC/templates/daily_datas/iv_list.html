@@ -58,10 +58,14 @@
             <thead> 
                 <tr> 
                     <th class="!text-center">Date</th>  
-                    <th class="!text-center">Implied Volatility KC</th> 
-                    <th class="!text-center">Implied Volatility RC</th> 
-                    <th class="!text-center">Realized Volatility KC passed</th> 
-                    <th class="!text-center">Realized Volatility RC passed</th> 
+                    <th class="!text-center">IV KCH</th> 
+                    <th class="!text-center">IV RCH</th> 
+                    <th class="!text-center">RV KCH passed</th> 
+                    <th class="!text-center">RV RCH passed</th> 
+                    <th class="!text-center">IV KCK</th> 
+                    <th class="!text-center">IV RCK</th> 
+                    <th class="!text-center">RV KCK passed</th> 
+                    <th class="!text-center">RV RCK passed</th> 
                     <th class="!text-center">Actions</th> 
                 </tr> 
             </thead> 
@@ -74,6 +78,10 @@
                     <td class="!text-center">{{ daily_data.implied_volatility_rc|floatformat:2 }}%</td> 
                     <td class="!text-center">{{ daily_data.realized_volatility_kc_has_passed|yesno:"Yes,No" }}</td>
                     <td class="!text-center">{{ daily_data.realized_volatility_rc_has_passed|yesno:"Yes,No" }}</td> 
+                    <td class="!text-center">{{ daily_data.implied_volatility_kck|floatformat:2 }}%</td> 
+                    <td class="!text-center">{{ daily_data.implied_volatility_rck|floatformat:2 }}%</td> 
+                    <td class="!text-center">{{ daily_data.realized_volatility_kck_has_passed|yesno:"Yes,No" }}</td>
+                    <td class="!text-center">{{ daily_data.realized_volatility_rck_has_passed|yesno:"Yes,No" }}</td> 
                     <td class="!text-center"> 
                         <div class="flex items-center justify-center gap-4"> 
                             <button class="btn btn-sm btn-outline-danger" data-delete-url="{% url 'daily-iv-delete' daily_data.pk %}" data-name="{{ daily_data.timestamp|date:'Y-m-d' }}" onclick="showDeleteConfirmation(this)"> Delete </button> 
@@ -251,7 +259,7 @@
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = `daily_ohlc_rc_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+            a.download = `daily_ohlc_iv_export_${new Date().toISOString().split('T')[0]}.xlsx`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
