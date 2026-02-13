@@ -28,7 +28,7 @@ class SmartCoffeeKalman:
 def load_and_merge_data():
     # Giữ nguyên các đường dẫn file của bạn
     # Đọc giá Daily
-    df_price = pd.read_excel("C:/Users/COMPUTER/Desktop/KC_DAILY.xlsx")
+    df_price = pd.read_excel("C:/Users/COMPUTER/Desktop/KCK_DAILY.xlsx")
     df_price['Date'] = pd.to_datetime(df_price['Date'])
     
     # Đọc IV

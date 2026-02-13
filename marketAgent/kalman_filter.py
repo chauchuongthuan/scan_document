@@ -31,7 +31,7 @@ def load_and_merge_data():
     print("Đang đọc dữ liệu...")
     
     # Đọc giá Daily (Lấy Date và Close)
-    df_price = pd.read_excel("C:/Users/COMPUTER/Desktop/KC_DAILY.xlsx")
+    df_price = pd.read_excel("C:/Users/COMPUTER/Desktop/KCK_DAILY.xlsx")
     df_price['Date'] = pd.to_datetime(df_price['Date'])
     
     # Đọc IV (Lấy Date và KCH26)

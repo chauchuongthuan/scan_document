@@ -17,6 +17,8 @@ from chartOHLC.models import OHLCDataKC, OHLCDataRC
 from django.utils import timezone # Import thư viện timezone của Django
 import pytz
 
+# from dailyOHLC.models import OHLCDataKCUDaily, OHLCDataRCUDaily
+# from coffee.helpers import calculate_and_set_stdev
 class TVGetDatafeedView(View):
     @login_required(login_url="login_cms")
     def post(request):
@@ -41,7 +43,15 @@ class TVGetDatafeedView(View):
 
                 if symbol_text == "KCH2026":
                     exchange_text = "ICEUS"
+                elif symbol_text == "KCK2026":
+                    exchange_text = "ICEUS"
                 elif symbol_text == "RCH2026":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "RCK2026":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "KCU2026":
+                    exchange_text = "ICEUS"
+                elif symbol_text == "RCU2026":
                     exchange_text = "ICEEUR"
                 elif symbol_text == "VNFER":
                     exchange_text = "ECONOMICS"
@@ -56,33 +66,84 @@ class TVGetDatafeedView(View):
                 )
                 
                 print(df)
-                if save_change == 'true':
-                    if df is not None:
-                        df = df.reset_index()
-                        for _, row in df.iterrows():
-                            naive_dt = row['datetime']
-                            timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh'))
-                            if symbol_text == "KCH2026":
-                                OHLCDataKC.objects.update_or_create(
-                                    symbol=symbol_text,
-                                    timestamp=timezone_dt,
-                                    defaults={
-                                        'open': row['open'], 'high': row['high'],
-                                        'low': row['low'], 'close': row['close'],
-                                        'volume': row['volume']
-                                    }
-                                )
-                            elif symbol_text == "RCH2026":
-                                OHLCDataRC.objects.update_or_create(
-                                    symbol=symbol_text,
-                                    timestamp=timezone_dt,
-                                    defaults={
-                                        'open': row['open'], 'high': row['high'],
-                                        'low': row['low'], 'close': row['close'],
-                                        'volume': row['volume']
-                                    }
-                                )
-                
+                if save_change == 'true' and df is not None:
+                    df = df.reset_index().drop_duplicates(subset=['datetime'], keep='last')
+                    # Chuẩn bị danh sách objects
+                    objs = []
+                    for _, row in df.iterrows():
+                        naive_dt = row['datetime']
+                        timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh')).replace(microsecond=0)
+                        model_class = OHLCDataKC if symbol_text in ["KCH2026", "KCK2026", "KCU2026"] else OHLCDataRC
+                        objs.append(model_class(
+                            symbol=symbol_text,
+                            timestamp=timezone_dt,
+                            open=row['open'],
+                            high=row['high'],
+                            low=row['low'],
+                            close=row['close'],
+                            volume=row['volume']
+                        ))
+
+                    # Thực hiện upsert (update if conflict) hàng loạt
+                    if objs:
+                        model_class = objs[0].__class__
+                        model_class.objects.bulk_create(
+                            objs,
+                            update_conflicts=True,
+                            unique_fields=['symbol', 'timestamp'],
+                            update_fields=['open', 'high', 'low', 'close', 'volume']
+                        )
+                # if save_change == 'true':
+                #     if df is not None:
+                #         df = df.reset_index()
+                #         # Sắp xếp theo thời gian tăng dần để đảm bảo tính toán đúng trình tự
+                #         df = df.sort_values('datetime')
+                        
+                #         # Xác định Model dựa trên symbol_text
+                #         model_class = None
+                #         if symbol_text == "KCU2026":
+                #             model_class = OHLCDataKCUDaily
+                #         elif symbol_text == "RCU2026":
+                #             model_class = OHLCDataRCUDaily
+
+                #         if model_class:
+                #             for _, row in df.iterrows():
+                #                 naive_dt = row['datetime']
+                #                 timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh'))
+                                
+                #                 # Tìm bản ghi gần nhất có timestamp nhỏ hơn ngày đang xử lý
+                #                 prev_record = model_class.objects.filter(
+                #                     timestamp__lt=timezone_dt
+                #                 ).order_by('-timestamp').first()
+
+                #                 # Tính toán Volatility
+                #                 if prev_record:
+                #                     v_open = (row['open'] / prev_record.open) - 1
+                #                     v_high = (row['high'] / prev_record.high) - 1
+                #                     v_low = (row['low'] / prev_record.low) - 1
+                #                     v_close = (row['close'] / prev_record.close) - 1
+                #                 else:
+                #                     # Nếu là bản ghi đầu tiên, để giá trị mặc định là 0 hoặc None
+                #                     v_open = v_high = v_low = v_close = 0
+
+                #                 # Update hoặc Create bản ghi
+                #                 obj, created = model_class.objects.update_or_create(
+                #                     timestamp=timezone_dt,
+                #                     defaults={
+                #                         'open': row['open'], 
+                #                         'high': row['high'],
+                #                         'low': row['low'], 
+                #                         'close': row['close'],
+                #                         'volatility_open': v_open,
+                #                         'volatility_high': v_high,
+                #                         'volatility_low': v_low,
+                #                         'volatility_close': v_close,
+                #                     }
+                #                 )
+                                
+                #                 # Tính toán và gán STDEV (hàm này sẽ lưu record sau khi tính)
+                #                 calculate_and_set_stdev(obj)
+                #                 obj.save()
                         
                 output_file = f"data_{symbol_text}_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')}.xlsx"
                 output_path = os.path.join(settings.MEDIA_ROOT, 'tvdatafeed', output_file)
@@ -122,7 +183,15 @@ class TVUnfilledGapView(View):
                 
                 if symbol_text == "KCH2026":
                     exchange_text = "ICEUS"
+                elif symbol_text == "KCK2026":
+                    exchange_text = "ICEUS"
                 elif symbol_text == "RCH2026":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "RCK2026":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "KCU2026":
+                    exchange_text = "ICEUS"
+                elif symbol_text == "RCU2026":
                     exchange_text = "ICEEUR"
                 else:
                     exchange_text = "ICEUS"

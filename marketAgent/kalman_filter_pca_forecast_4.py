@@ -12,7 +12,7 @@ from pandas.tseries.holiday import USFederalHolidayCalendar
 us_cal = USFederalHolidayCalendar()
 trading_days = CustomBusinessDay(calendar=us_cal)
 
-path_price = "C:/Users/COMPUTER/Desktop/KC_DAILY.xlsx"
+path_price = "C:/Users/COMPUTER/Desktop/KCK_DAILY.xlsx"
 path_iv = "C:/Users/COMPUTER/Desktop/IMPLIED_VOLATILITY.xlsx"
 path_stock = "C:/Users/COMPUTER/Desktop/ice_kc_stock_data_export_full.xlsx"
 path_cot = "C:/Users/COMPUTER/Desktop/Tong_Hop_CoT_Coffee_C.xlsx"
