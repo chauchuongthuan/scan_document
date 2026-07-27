@@ -11,6 +11,7 @@ class DailyMarketPrice(models.Model):
     midstream_high = models.FloatField(null=True, blank=True)
     differential_bid = models.FloatField(null=True, blank=True)
     differential_ask = models.FloatField(null=True, blank=True)
+    stock_level = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta: 
@@ -21,20 +22,6 @@ class DailyMarketPrice(models.Model):
 
     def __str__(self):
         return f"Prices for {self.date}"
-
-class DailyNewsFromVietNamSign(models.Model):
-    date = models.DateField(unique=True, primary_key=True)
-    sign_summary = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta: 
-        verbose_name = 'NewsSign'
-        verbose_name_plural = 'NewsSigns'
-        ordering = ['-created_at']
-        db_table = 'news_sign'
-
-    def __str__(self):
-        return f"Signs for {self.date}"
 
 class IceData(models.Model):
     date = models.DateField(unique=True, primary_key=True)

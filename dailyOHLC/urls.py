@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import OHLCDataKCDailyView, OHLCDataRCDailyView, ImpliedVolatilityView, OpenGapView
 from .views_may import OHLCDataKCKDailyView, OHLCDataRCKDailyView
+from .views_july import OHLCDataKCNDailyView, OHLCDataRCNDailyView
 from .views_sep import OHLCDataKCUDailyView, OHLCDataRCUDailyView
 urlpatterns = [
     path('kc/', OHLCDataKCDailyView.list_data_kc, name='daily-ohlc-kc-list'),
@@ -27,6 +28,18 @@ urlpatterns = [
     path('rck/import-excel/', OHLCDataRCKDailyView.import_excel_rck, name='daily-ohlc-rck-import-excel'),
     path('rck/export-excel/', OHLCDataRCKDailyView.export_excel, name='daily-ohlc-rck-export-excel'),
     path('<pk>/rck/delete/', OHLCDataRCKDailyView.delete_data_rck, name='daily-ohlc-rck-delete'),
+
+    path('kcn/', OHLCDataKCNDailyView.list_data_kcn, name='daily-ohlc-kcn-list'),
+    path('kcn/create/', OHLCDataKCNDailyView.create_data_kcn, name='daily-ohlc-kcn-create'),
+    path('kcn/import-excel/', OHLCDataKCNDailyView.import_excel_kcn, name='daily-ohlc-kcn-import-excel'),
+    path('kcn/export-excel/', OHLCDataKCNDailyView.export_excel, name='daily-ohlc-kcn-export-excel'),
+    path('<pk>/kcn/delete/', OHLCDataKCNDailyView.delete_data_kcn, name='daily-ohlc-kcn-delete'),
+
+    path('rcn/', OHLCDataRCNDailyView.list_data_rcn, name='daily-ohlc-rcn-list'),
+    path('rcn/create/', OHLCDataRCNDailyView.create_data_rcn, name='daily-ohlc-rcn-create'),
+    path('rcn/import-excel/', OHLCDataRCNDailyView.import_excel_rcn, name='daily-ohlc-rcn-import-excel'),
+    path('rcn/export-excel/', OHLCDataRCNDailyView.export_excel, name='daily-ohlc-rcn-export-excel'),
+    path('<pk>/rcn/delete/', OHLCDataRCNDailyView.delete_data_rcn, name='daily-ohlc-rcn-delete'),
 
     path('kcu/', OHLCDataKCUDailyView.list_data_kcu, name='daily-ohlc-kcu-list'),
     path('kcu/create/', OHLCDataKCUDailyView.create_data_kcu, name='daily-ohlc-kcu-create'),

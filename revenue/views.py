@@ -64,7 +64,6 @@ class RevenueByHourView:
             try:
                 start_datetime = request.POST.get('start_datetime', None)
                 end_datetime = request.POST.get('end_datetime', None)
-                
                 if start_datetime:
                     start_datetime_str = start_datetime.replace("T", " ")
                     
@@ -75,7 +74,7 @@ class RevenueByHourView:
                         # Parse dates
                         start_dt = datetime.strptime(start_datetime_str, "%Y-%m-%d %H:%M")
                         end_dt = datetime.strptime(end_datetime_str, "%Y-%m-%d %H:%M")
-                        
+                        end_dt = end_dt - timedelta(hours=1)
                         # Generate all datetime slots in the range
                         current_dt = start_dt
                         processed_slots = []
@@ -114,3 +113,57 @@ class RevenueByHourView:
         page_obj = paginator.get_page(page_number)
         
         return render(request, 'revenue/list_by_hour.html', {'datas': page_obj, 'per_page_options': per_page_options, 'per_page': int(per_page), 'today': today, 'yesterday': yesterday})
+
+    @login_required(login_url="login_cms")
+    def export_excel(request):
+        try:
+            data = []
+            for data_item in RevenueByHour.objects.all().order_by('-date', '-hour'):
+                data.append({
+                    'Date': data_item.date,
+                    'Hour': data_item.hour,
+                    'Total': data_item.total,
+                })
+            
+            df = pd.DataFrame(data)
+            # Tạo HTTP response
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            )
+            filename = f"data__{datetime.now().strftime('%Y_%m_%d_%H_%M')}.xlsx"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            # Tạo Excel file với cấu trúc giống file mẫu
+            with pd.ExcelWriter(response, engine='openpyxl') as writer:
+                # Tạo workbook
+                workbook = writer.book
+                
+                worksheet = workbook.create_sheet("Data", 0)
+                
+                # Xóa sheet mặc định nếu có
+                if 'Sheet' in workbook.sheetnames:
+                    del workbook['Sheet']
+                
+                # Dòng 3: Headers
+                headers = [
+                    'Date', 'Hour', 'Total', 
+                ]
+                
+                for col, header in enumerate(headers, 1):
+                    cell = worksheet.cell(row=1, column=col, value=header)
+                    # Có thể thêm style cho header nếu cần
+                    cell.font = openpyxl.styles.Font(bold=True)
+                
+                # Ghi dữ liệu từ DataFrame (bắt đầu từ dòng 2)
+                if not df.empty:
+                    for row_idx, row_data in enumerate(df.itertuples(), 2):
+                        for col_idx, value in enumerate(row_data[1:], 1):  # Bỏ qua index
+                            worksheet.cell(row=row_idx, column=col_idx, value=value)
+            
+            return response
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Export Excel thất bại: {str(e)}'
+            }, status=400)

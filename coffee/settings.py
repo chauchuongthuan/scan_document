@@ -43,16 +43,13 @@ INSTALLED_APPS = [
     "django_crontab",
     "documents",
     "keywords",
-    "entropyCalculator",
     "openNcFile",
     "marketAgent",
     "openGapCalculator",
-    "forecasting",
-    "quantumEngine",
-    "quantumEngineV2",
     "chartOHLC",
     "dailyOHLC",
     "revenue",
+    "scan_news",
 ]
 
 CRONJOBS = [
@@ -149,9 +146,6 @@ TIME_ZONE = 'Asia/Ho_Chi_Minh'
 USE_TZ = True
 
 USE_I18N = True
-
-USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

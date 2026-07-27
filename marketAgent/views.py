@@ -8,7 +8,6 @@ from django.conf import settings # Import settings
 import numpy as np
 import os
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 from django.shortcuts import render
 from datetime import datetime, timedelta
 import requests
@@ -17,56 +16,6 @@ import json
 from .models import IceRCStockData
 import openpyxl.styles
 from django.core.paginator import Paginator
-
-class SearchGGView(View):
-    def get(request):
-        api_key = os.environ.get('API_KEY_GG_SEARCH')
-        cx = os.environ.get('CX_GG_SEARCH')
-        url = "https://www.googleapis.com/customsearch/v1"
-        keywords_query = [
-            # 'thiên tai tây nguyên mới nhất', 
-            # 'thiên tai Gia Lai mới nhất', 
-            # 'thiên tai dak lak mới nhất', 
-            # 'thiên tai dak nong mới nhất',
-            # 'lũ lụt mới nhất',
-            # 'tin tức cà phê hôm nay',
-            'reuters coffee',
-            'tin tức thiên tai tây nguyên hôm nay',
-            'tin tức cà phê hôm nay'
-        ]
-        
-        final_data = []
-
-        for keyword in keywords_query:
-            params = {
-                'key': api_key,
-                'cx': cx,
-                'q': keyword,
-                'dateRestrict': 'd1',  # Giới hạn 1 ngày qua (d1 = 1 day)
-                'gl': 'vn',
-            }
-            
-            response = requests.get(url, params=params)
-            print("response", response)
-            data = response.json()
-
-            current_keyword_articles = []
-            
-            if 'items' in data:
-                for item in data['items']:
-                    current_keyword_articles.append({
-                        'title': item['title'],
-                        'link': item['link'],
-                        'snippet': item['snippet']
-                    })
-
-            final_data.append({
-                'keyword': keyword,
-                'articles': current_keyword_articles,
-                'count': len(current_keyword_articles)
-            })
-        print("final_data", final_data)
-        return render(request, 'market-agent/gg-search.html', {'results': final_data})
 
 class KCDataStockJsonToExcel(View):
     def post(request):
@@ -81,11 +30,8 @@ class KCDataStockJsonToExcel(View):
                     data = json.load(f)
 
                 # 2. Chuyển đổi dữ liệu thành DataFrame
-                # Mỗi phần tử trong list là một row: [Date, Bags]
-                # Ta đặt tên cột là 'Date' và 'Bags'
                 df = pd.DataFrame(data, columns=['Date', 'Bags'])
 
-                # Tùy chọn: Chuyển đổi cột 'Bags' sang kiểu số (float)
                 df['Bags'] = pd.to_numeric(df['Bags'], errors='coerce')
                 
                 # Tùy chọn: Chuyển đổi cột 'Date' sang kiểu datetime
@@ -123,14 +69,20 @@ class KCDataStockJsonToExcel(View):
                 'date': item[0],
                 'stock': item[1]
             })
+            
+        last_data = formatted_data[0] if formatted_data else None
+        pre_last_data = formatted_data[1] if len(formatted_data) > 1 else None
         paginator = Paginator(formatted_data, per_page)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-
+        change = float(last_data['stock']) - float(pre_last_data['stock']) if last_data and pre_last_data else 0
         return render(request, 'market-agent/get-kc-stock-data.html', {
             'datas': page_obj, 
             'per_page_options': per_page_options, 
             'per_page': int(per_page),
+            'last_data': last_data,
+            'pre_last_data': pre_last_data,
+            'change': change
         })
 
 class RCDataStockView(View):
@@ -236,12 +188,14 @@ class RCDataStockView(View):
 
         per_page = request.GET.get('per_page', 25)
         datas = IceRCStockData.objects.all().order_by('-date')
-
+        last_data = datas.first()
+        pre_last_data = datas[1] if len(datas) > 1 else None
         paginator = Paginator(datas, per_page)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         today = datetime.now().date()
-        return render(request, 'market-agent/get-rc-stock-data.html', {'datas': page_obj, 'per_page_options': per_page_options, 'per_page': int(per_page), 'today': today})
+        change = int(last_data.lots_with_val_cert) - int(pre_last_data.lots_with_val_cert)
+        return render(request, 'market-agent/get-rc-stock-data.html', {'datas': page_obj, 'per_page_options': per_page_options, 'per_page': int(per_page), 'today': today, 'last_data': last_data, 'pre_last_data': pre_last_data, 'change': change})
 
 class GetBrazilForecastData(View):
     def post(request):
@@ -256,7 +210,7 @@ class GetBrazilForecastData(View):
                     os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', 'sao_paulo.json'),
                     os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', 'bahia.json'),
                 ]
-                output_file = f"brazil_forecast_{timestamp}.xlsx"
+                output_file = f"daily/brazil_forecast_{timestamp}.xlsx"
                 output_path = os.path.join(settings.MEDIA_ROOT, 'brazil_forecast', output_file)
                 with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
                     for file_path in json_files:

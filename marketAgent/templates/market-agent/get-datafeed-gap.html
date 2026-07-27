@@ -38,7 +38,6 @@
             {% csrf_token %}
             <div class="flex flex-col md:flex-row gap-8">
                 <div class="w-full space-y-6">
-                    <!-- Comco ref, Buyer ref, Contract date, Price -->
                     <div class="grid grid-cols-1 gap-4">
                         <div class="grid grid-cols-1 gap-4">
                             <div>
@@ -51,10 +50,14 @@
                                     >
                                         <option value="KCU2026">KCU2026</option>
                                         <option value="RCU2026">RCU2026</option>
+                                        <option value="KCN2026">KCN2026</option>
+                                        <option value="RCN2026">RCN2026</option>
                                         <option value="KCK2026">KCK2026</option>
                                         <option value="RCK2026">RCK2026</option>
                                         <option value="KCH2026">KCH2026</option>
                                         <option value="RCH2026">RCH2026</option>
+                                        <option value="KC1!">KC1!</option>
+                                        <option value="KC2!">KC2!</option>
                                     </select>
                                 </div>
                             </div>
@@ -67,6 +70,7 @@
                                         class="form-input"
                                     >
                                         <option value="in_1_minute">1 Minute</option>
+                                        <option value="in_5_minute">5 Minute</option>
                                         <option value="in_daily">Daily</option>
                                     </select>
                                 </div>

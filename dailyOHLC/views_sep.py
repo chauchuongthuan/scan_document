@@ -78,7 +78,7 @@ class OHLCDataKCUDailyView:
                 )
                 calculate_and_set_stdev(kcu_daily)
                 kcu_daily.save()
-                
+                print("kcu_daily:", kcu_daily)
                 return JsonResponse({
                     'status': 'success',
                     'message': 'Thêm thành công!',
@@ -199,21 +199,32 @@ class OHLCDataKCUDailyView:
     def export_excel(request):
         try:
             kcu_daily_datas = OHLCDataKCUDaily.objects.all().order_by('timestamp')
-            
+            target_timezone = timezone.get_current_timezone()
             data = []
             for kcu_daily_data in kcu_daily_datas:
                 # Format date fields to dd/mm/yyyy
                 def format_date(date_field):
-                    if date_field:
-                        if isinstance(date_field, (datetime.date, datetime.datetime)):
-                            return date_field.strftime('%d/%m/%Y')
-                        # Nếu là string, cố gắng parse và format lại
-                        try:
-                            parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
-                            return parsed_date.strftime('%d/%m/%Y')
-                        except:
-                            return str(date_field)
-                    return ""
+                    if not date_field:
+                        return ""
+                    
+                    # Nếu là datetime (có giờ phút giây)
+                    if isinstance(date_field, datetime.datetime):
+                        # Kiểm tra xem datetime đã có thông tin timezone (aware) chưa
+                        if timezone.is_aware(date_field):
+                            # Chuyển đổi chính xác sang GMT+7 trước khi format
+                            date_field = timezone.localtime(date_field, target_timezone)
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu chỉ là object date thuần túy (không có giờ)
+                    elif isinstance(date_field, datetime.date):
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu là string, ép kiểu và parse thử
+                    try:
+                        parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
+                        return parsed_date.strftime('%d/%m/%Y')
+                    except ValueError:
+                        return str(date_field)
                 
                 data.append({
                     'Date': format_date(kcu_daily_data.timestamp),
@@ -473,21 +484,32 @@ class OHLCDataRCUDailyView:
     def export_excel(request):
         try:
             rcu_daily_datas = OHLCDataRCUDaily.objects.all().order_by('timestamp')
-            
+            target_timezone = timezone.get_current_timezone()
             data = []
             for rcu_daily_data in rcu_daily_datas:
                 # Format date fields to dd/mm/yyyy
                 def format_date(date_field):
-                    if date_field:
-                        if isinstance(date_field, (datetime.date, datetime.datetime)):
-                            return date_field.strftime('%d/%m/%Y')
-                        # Nếu là string, cố gắng parse và format lại
-                        try:
-                            parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
-                            return parsed_date.strftime('%d/%m/%Y')
-                        except:
-                            return str(date_field)
-                    return ""
+                    if not date_field:
+                        return ""
+                    
+                    # Nếu là datetime (có giờ phút giây)
+                    if isinstance(date_field, datetime.datetime):
+                        # Kiểm tra xem datetime đã có thông tin timezone (aware) chưa
+                        if timezone.is_aware(date_field):
+                            # Chuyển đổi chính xác sang GMT+7 trước khi format
+                            date_field = timezone.localtime(date_field, target_timezone)
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu chỉ là object date thuần túy (không có giờ)
+                    elif isinstance(date_field, datetime.date):
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu là string, ép kiểu và parse thử
+                    try:
+                        parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
+                        return parsed_date.strftime('%d/%m/%Y')
+                    except ValueError:
+                        return str(date_field)
                 
                 data.append({
                     'Date': format_date(rcu_daily_data.timestamp),

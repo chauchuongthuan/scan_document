@@ -171,12 +171,6 @@
                   style="width: 100px; height: 100px"
                   alt="image"
                 />
-                {% comment %}
-                <span
-                  class="align-middle text-2xl font-semibold ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light lg:inline"
-                  >VRISTO</span
-                >
-                {% endcomment %}
               </a>
               <a
                 href="javascript:;"
@@ -317,7 +311,7 @@
                       <div class="flex items-center">
                         <span
                           class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >KC</span
+                          >KCH</span
                         >
                       </div>
                     </a>
@@ -327,7 +321,7 @@
                       <div class="flex items-center">
                         <span
                           class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >RC</span
+                          >RCH</span
                         >
                       </div>
                     </a>
@@ -348,6 +342,26 @@
                         <span
                           class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
                           >RCK</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'daily-ohlc-kcn-list' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >KCN</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'daily-ohlc-rcn-list' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >RCN</span
                         >
                       </div>
                     </a>
@@ -401,6 +415,16 @@
               </h2>
               <li class="nav-item">
                 <ul>
+                  <li class="nav-item">
+                    <a href="{% url 'get-weather-forecast' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Weather Forecast</span
+                        >
+                      </div>
+                    </a>
+                  </li>
                   <li class="nav-item">
                     <a href="{% url 'get-brazil-forecast' %}" class="group">
                       <div class="flex items-center">
@@ -478,111 +502,22 @@
               <h2
                 class="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]"
               >
-                <span>Tính toán</span>
+                <span>Scan History</span>
               </h2>
               <li class="nav-item">
                 <ul>
                   <li class="nav-item">
-                    <a href="{% url 'calculate-entropy' %}" class="group">
+                    <a href="{% url 'manage-keywords' %}" class="group">
                       <div class="flex items-center">
                         <span
                           class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Entropy Paragraph</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="{% url 'calculate-entropy-v2' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Entropy Paragraph v2</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="{% url 'calculate-entropy-v3' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Entropy Paragraph v3</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="{% url 'calculate-entropy-v4' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Entropy Paragraph v4</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="{% url 'calculate-entropy-v5' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Entropy Paragraph v5</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="{% url 'predict-today' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Predict</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="{% url 'coffee-forecast' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Forecasting</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a
-                      href="{% url 'calculate-entropy-all-paragraph' %}"
-                      class="group"
-                    >
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Entropy Full Paragraph</span
+                          >Keywords Scan</span
                         >
                       </div>
                     </a>
                   </li>
                 </ul>
               </li>
-              <!-- <h2
-                            class="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]">
-                            <span>Gap Calculator</span>
-                        </h2>
-                        <li class="nav-item">
-                            <ul>
-                                <li class="nav-item">
-                                    <a href="{% url 'rc-open-gap-calculator' %}" class="group">
-                                        <div class="flex items-center">
-                                            <span
-                                                class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">RC Open Gap Calculator</span>
-                                        </div>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li> -->
               <h2
                 class="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]"
               >
@@ -595,7 +530,67 @@
                       <div class="flex items-center">
                         <span
                           class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Gemini Impact</span
+                          >Create Prompts</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'get-calculated-momentum' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Get Calculated Momentum</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <!-- <li class="nav-item">
+                    <a href="{% url 'create-prompt-2' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Prompt Chunk</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'create-prompt-3' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Prompt Information Geometry</span
+                        >
+                      </div>
+                    </a>
+                  </li> -->
+                  <li class="nav-item">
+                    <a href="{% url 'create-prompt-4' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Prompt for each header</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'create-prompt-HB' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Prompt for Hot Beans</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'get-effective-momentum-HB' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Get Momentum</span
                         >
                       </div>
                     </a>
@@ -618,54 +613,6 @@
                                 </li>
                             </ul>
                         </li> -->
-
-              <h2
-                class="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]"
-              >
-                <span>Quantum Engine</span>
-              </h2>
-              <li class="nav-item">
-                <ul>
-                  <li class="nav-item">
-                    <a href="{% url 'quantum-dashboard' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Quantum Engine</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li class="nav-item">
-                <ul>
-                  <li class="nav-item">
-                    <a href="{% url 'quantum-import-history' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Import history</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li class="nav-item">
-                <ul>
-                  <li class="nav-item">
-                    <a href="{% url 'quantum-dashboard-v2' %}" class="group">
-                      <div class="flex items-center">
-                        <span
-                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Quantum Engine V2</span
-                        >
-                      </div>
-                    </a>
-                  </li>
-                </ul>
-              </li>
             </ul>
           </div>
         </nav>

@@ -32,16 +32,13 @@ urlpatterns = [
 
     path('documents/', include('documents.urls')),
     path('keywords/', include('keywords.urls')),
-    path('entropy-calculator/', include('entropyCalculator.urls')),
     path('open-nc-file/', include('openNcFile.urls')),
     path('market-agent/', include('marketAgent.urls')),
     path('open-gap-calculator/', include('openGapCalculator.urls')),
-    path('forecasting/', include('forecasting.urls')),
-    path('quantum-engine/', include('quantumEngine.urls')),
-    path('quantum-engine-v2/', include('quantumEngineV2.urls')),
     path('chart-ohlc/', include('chartOHLC.urls')),
     path('daily-ohlc/', include('dailyOHLC.urls')),
     path('revenue/', include('revenue.urls')),
+    path('scan-news/', include('scan_news.urls')),
 
     # AUTH CMS
     path('cms/login/', LoginView.as_view(), name='login_cms'),

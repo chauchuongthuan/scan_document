@@ -1,5 +1,6 @@
 {% extends 'admin/layouts/admin.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block content %}
 {% include 'components/common/confirm_modal.html' %}
@@ -66,6 +67,10 @@
     </div>
     </div>
     <div class="panel">
+        <div class="text-lg">
+            Change {{last_data.date|date:"Y-m-d"}}: stock rc {% if pre_last_data.lots_with_val_cert|floatformat:0 > last_data.lots_with_val_cert|floatformat:0 %}giảm{% elif pre_last_data.lots_with_val_cert|floatformat:0 < last_data.lots_with_val_cert|floatformat:0 %}tăng{% else %}không đổi{% endif %} {{pre_last_data.lots_with_val_cert|floatformat:0|intcomma}} -> {{last_data.lots_with_val_cert|floatformat:0|intcomma}} 
+            : {% if change >= 0 %}tăng{% else %}giảm{% endif %} {{change|floatformat:0|intcomma}} lots
+        </div>
         <table class="table-striped table-hover"> 
             <thead> 
                 <tr> 
@@ -79,7 +84,7 @@
                 {% for data in datas %} 
                 <tr> 
                     <td>{{ data.date|date:"Y-m-d" }}</td>
-                    <td>{{ data.lots_with_val_cert }}</td>
+                    <td>{{ data.lots_with_val_cert | floatformat:0 | intcomma }}</td>
                     
                     
                 </tr> 

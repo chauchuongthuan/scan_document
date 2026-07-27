@@ -8,4 +8,5 @@ urlpatterns = [
 
     path('', RevenueView.revenue_list, name='revenue-list'),
     path('by-hour', RevenueByHourView.revenue_by_hour_list, name='revenue-by-hour-list'),
+    path('by-hour/export-excel', RevenueByHourView.export_excel, name='revenue-by-hour-export-excel'),
 ]

@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.utils.text import slugify
 
-from .models import OHLCDataKCDaily, OHLCDataRCDaily, OHLCDataKCKDaily, OHLCDataRCKDaily, OHLCDataKCUDaily, OHLCDataRCUDaily, ImpliedVolatility
+from .models import OHLCDataKCDaily, OHLCDataRCDaily, OHLCDataKCKDaily, OHLCDataRCKDaily, OHLCDataKCNDaily, OHLCDataRCNDaily, OHLCDataKCUDaily, OHLCDataRCUDaily, ImpliedVolatility
 from django.utils import timezone
 import os
 from django.core.files.storage import default_storage
@@ -199,21 +199,32 @@ class OHLCDataKCDailyView:
     def export_excel(request):
         try:
             kc_daily_datas = OHLCDataKCDaily.objects.all().order_by('timestamp')
-            
+            target_timezone = timezone.get_current_timezone()
             data = []
             for kc_daily_data in kc_daily_datas:
                 # Format date fields to dd/mm/yyyy
                 def format_date(date_field):
-                    if date_field:
-                        if isinstance(date_field, (datetime.date, datetime.datetime)):
-                            return date_field.strftime('%d/%m/%Y')
-                        # Nếu là string, cố gắng parse và format lại
-                        try:
-                            parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
-                            return parsed_date.strftime('%d/%m/%Y')
-                        except:
-                            return str(date_field)
-                    return ""
+                    if not date_field:
+                        return ""
+                    
+                    # Nếu là datetime (có giờ phút giây)
+                    if isinstance(date_field, datetime.datetime):
+                        # Kiểm tra xem datetime đã có thông tin timezone (aware) chưa
+                        if timezone.is_aware(date_field):
+                            # Chuyển đổi chính xác sang GMT+7 trước khi format
+                            date_field = timezone.localtime(date_field, target_timezone)
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu chỉ là object date thuần túy (không có giờ)
+                    elif isinstance(date_field, datetime.date):
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu là string, ép kiểu và parse thử
+                    try:
+                        parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
+                        return parsed_date.strftime('%d/%m/%Y')
+                    except ValueError:
+                        return str(date_field)
                 
                 data.append({
                     'Date': format_date(kc_daily_data.timestamp),
@@ -473,21 +484,32 @@ class OHLCDataRCDailyView:
     def export_excel(request):
         try:
             rc_daily_datas = OHLCDataRCDaily.objects.all().order_by('timestamp')
-            
+            target_timezone = timezone.get_current_timezone()
             data = []
             for rc_daily_data in rc_daily_datas:
                 # Format date fields to dd/mm/yyyy
                 def format_date(date_field):
-                    if date_field:
-                        if isinstance(date_field, (datetime.date, datetime.datetime)):
-                            return date_field.strftime('%d/%m/%Y')
-                        # Nếu là string, cố gắng parse và format lại
-                        try:
-                            parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
-                            return parsed_date.strftime('%d/%m/%Y')
-                        except:
-                            return str(date_field)
-                    return ""
+                    if not date_field:
+                        return ""
+                    
+                    # Nếu là datetime (có giờ phút giây)
+                    if isinstance(date_field, datetime.datetime):
+                        # Kiểm tra xem datetime đã có thông tin timezone (aware) chưa
+                        if timezone.is_aware(date_field):
+                            # Chuyển đổi chính xác sang GMT+7 trước khi format
+                            date_field = timezone.localtime(date_field, target_timezone)
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu chỉ là object date thuần túy (không có giờ)
+                    elif isinstance(date_field, datetime.date):
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu là string, ép kiểu và parse thử
+                    try:
+                        parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
+                        return parsed_date.strftime('%d/%m/%Y')
+                    except ValueError:
+                        return str(date_field)
                 
                 data.append({
                     'Date': format_date(rc_daily_data.timestamp),
@@ -578,12 +600,23 @@ class ImpliedVolatilityView:
         for data in daily_datas:
             data.implied_volatility_rc = data.implied_volatility_rc * 100 if data.implied_volatility_rc is not None else None
             data.implied_volatility_kc = data.implied_volatility_kc * 100 if data.implied_volatility_kc is not None else None
+            data.rv_passed_value_kc = data.rv_passed_value_kc * 100 if data.rv_passed_value_kc is not None else None
+            data.rv_passed_value_rc = data.rv_passed_value_rc * 100 if data.rv_passed_value_rc is not None else None
 
             data.implied_volatility_rck = data.implied_volatility_rck * 100 if data.implied_volatility_rck is not None else None
             data.implied_volatility_kck = data.implied_volatility_kck * 100 if data.implied_volatility_kck is not None else None
+            data.rv_passed_value_kck = data.rv_passed_value_kck * 100 if data.rv_passed_value_kck is not None else None
+            data.rv_passed_value_rck = data.rv_passed_value_rck * 100 if data.rv_passed_value_rck is not None else None
+
+            data.implied_volatility_rcn = data.implied_volatility_rcn * 100 if data.implied_volatility_rcn is not None else None
+            data.implied_volatility_kcn = data.implied_volatility_kcn * 100 if data.implied_volatility_kcn is not None else None
+            data.rv_passed_value_kcn = data.rv_passed_value_kcn * 100 if data.rv_passed_value_kcn is not None else None
+            data.rv_passed_value_rcn = data.rv_passed_value_rcn * 100 if data.rv_passed_value_rcn is not None else None
 
             data.implied_volatility_rcu = data.implied_volatility_rcu * 100 if data.implied_volatility_rcu is not None else None
             data.implied_volatility_kcu = data.implied_volatility_kcu * 100 if data.implied_volatility_kcu is not None else None
+            data.rv_passed_value_kcu = data.rv_passed_value_kcu * 100 if data.rv_passed_value_kcu is not None else None
+            data.rv_passed_value_rcu = data.rv_passed_value_rcu * 100 if data.rv_passed_value_rcu is not None else None
         
         paginator = Paginator(daily_datas, per_page)
         page_number = request.GET.get('page')
@@ -604,6 +637,9 @@ class ImpliedVolatilityView:
 
                 implied_volatility_kck = round(float(request.POST.get('implied_volatility_kck')) / 100, 4) if request.POST.get('implied_volatility_kck') else None
                 implied_volatility_rck = round(float(request.POST.get('implied_volatility_rck')) / 100, 4) if request.POST.get('implied_volatility_rck') else None
+
+                implied_volatility_kcn = round(float(request.POST.get('implied_volatility_kcn')) / 100, 4) if request.POST.get('implied_volatility_kcn') else None
+                implied_volatility_rcn = round(float(request.POST.get('implied_volatility_rcn')) / 100, 4) if request.POST.get('implied_volatility_rcn') else None
                 
                 implied_volatility_kcu = round(float(request.POST.get('implied_volatility_kcu')) / 100, 4) if request.POST.get('implied_volatility_kcu') else None
                 implied_volatility_rcu = round(float(request.POST.get('implied_volatility_rcu')) / 100, 4) if request.POST.get('implied_volatility_rcu') else None
@@ -614,8 +650,23 @@ class ImpliedVolatilityView:
                 kck_passed = False
                 rck_passed = False
                 
+                kcn_passed = False
+                rcn_passed = False
+                
                 kcu_passed = False
                 rcu_passed = False
+
+                rv_passed_value_rc = None
+                rv_passed_value_kc = None
+
+                rv_passed_value_kck = None
+                rv_passed_value_rck = None
+
+                rv_passed_value_kcn = None
+                rv_passed_value_rcn = None
+                
+                rv_passed_value_kcu = None
+                rv_passed_value_rcu = None
 
                 # Kiểm tra điều kiện cho RC (Robusta Coffee Mar)
                 if implied_volatility_rc:
@@ -631,6 +682,7 @@ class ImpliedVolatilityView:
                         # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rc
                         if any(v is not None and v > implied_volatility_rc for v in stdev_values_rc):
                             rc_passed = True
+                            rv_passed_value_rc = max(v for v in stdev_values_rc if v is not None) - implied_volatility_rc
 
                 # Kiểm tra điều kiện cho KC (Arabica Coffee Mar)
                 if implied_volatility_kc:
@@ -645,6 +697,7 @@ class ImpliedVolatilityView:
                         # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
                         if any(v is not None and v > implied_volatility_kc for v in stdev_values_kc):
                             kc_passed = True
+                            rv_passed_value_kc = max(v for v in stdev_values_kc if v is not None) - implied_volatility_kc
                 
                 # Kiểm tra điều kiện cho KCK (Arabica Coffee May)
                 if implied_volatility_kck:
@@ -659,6 +712,7 @@ class ImpliedVolatilityView:
                         # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
                         if any(v is not None and v > implied_volatility_kck for v in stdev_values_kck):
                             kck_passed = True
+                            rv_passed_value_kck = max(v for v in stdev_values_kck if v is not None) - implied_volatility_kck
 
                 # Kiểm tra điều kiện cho RCK (Robusta Coffee May)
                 if implied_volatility_rck:
@@ -674,6 +728,39 @@ class ImpliedVolatilityView:
                         # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rck
                         if any(v is not None and v > implied_volatility_rck for v in stdev_values_rck):
                             rck_passed = True
+                            rv_passed_value_rck = max(v for v in stdev_values_rck if v is not None) - implied_volatility_rck
+
+                # Kiểm tra điều kiện cho KCN (Arabica Coffee July)
+                if implied_volatility_kcn:
+                    ohlc_kcn = OHLCDataKCNDaily.objects.filter(timestamp__date=input_date).first()
+                    if ohlc_kcn:
+                        stdev_values_kcn = [
+                            ohlc_kcn.stdev_vol_open_20_days,
+                            ohlc_kcn.stdev_vol_high_20_days,
+                            ohlc_kcn.stdev_vol_low_20_days,
+                            ohlc_kcn.stdev_vol_close_20_days
+                        ]
+                        # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
+                        if any(v is not None and v > implied_volatility_kcn for v in stdev_values_kcn):
+                            kcn_passed = True
+                            rv_passed_value_kcn = max(v for v in stdev_values_kcn if v is not None) - implied_volatility_kcn
+
+                # Kiểm tra điều kiện cho RCN (Robusta Coffee July)
+                if implied_volatility_rcn:
+                    ohlc_rcn = OHLCDataRCNDaily.objects.filter(timestamp__date=input_date).first()
+                    if ohlc_rcn:
+                        # Lấy tất cả các chỉ số STDEV, lọc bỏ giá trị None
+                        stdev_values_rcn = [
+                            ohlc_rcn.stdev_vol_open_20_days,
+                            ohlc_rcn.stdev_vol_high_20_days,
+                            ohlc_rcn.stdev_vol_low_20_days,
+                            ohlc_rcn.stdev_vol_close_20_days
+                        ]
+                        # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rcn
+                        if any(v is not None and v > implied_volatility_rcn for v in stdev_values_rcn):
+                            rcn_passed = True
+                            rv_passed_value_rcn = max(v for v in stdev_values_rcn if v is not None) - implied_volatility_rcn
+
 
                 # Kiểm tra điều kiện cho KCU (Arabica Coffee Sep)
                 if implied_volatility_kcu:
@@ -688,6 +775,7 @@ class ImpliedVolatilityView:
                         # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
                         if any(v is not None and v > implied_volatility_kcu for v in stdev_values_kcu):
                             kcu_passed = True
+                            rv_passed_value_kcu = max(v for v in stdev_values_kcu if v is not None) - implied_volatility_kcu
 
                 # Kiểm tra điều kiện cho RCU (Robusta Coffee Sep)
                 if implied_volatility_rcu:
@@ -703,6 +791,7 @@ class ImpliedVolatilityView:
                         # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rcu
                         if any(v is not None and v > implied_volatility_rcu for v in stdev_values_rcu):
                             rcu_passed = True
+                            rv_passed_value_rcu = max(v for v in stdev_values_rcu if v is not None) - implied_volatility_rcu
 
                 iv_daily = ImpliedVolatility(
                     timestamp=input_date,
@@ -711,6 +800,9 @@ class ImpliedVolatilityView:
 
                     implied_volatility_kck=implied_volatility_kck,
                     implied_volatility_rck=implied_volatility_rck,
+
+                    implied_volatility_kcn=implied_volatility_kcn,
+                    implied_volatility_rcn=implied_volatility_rcn,
 
                     implied_volatility_kcu=implied_volatility_kcu,
                     implied_volatility_rcu=implied_volatility_rcu,
@@ -721,8 +813,23 @@ class ImpliedVolatilityView:
                     realized_volatility_kck_has_passed=kck_passed,
                     realized_volatility_rck_has_passed=rck_passed,
 
+                    realized_volatility_kcn_has_passed=kcn_passed,
+                    realized_volatility_rcn_has_passed=rcn_passed,
+
                     realized_volatility_kcu_has_passed=kcu_passed,
                     realized_volatility_rcu_has_passed=rcu_passed,
+                    
+                    rv_passed_value_rc=rv_passed_value_rc,
+                    rv_passed_value_kc=rv_passed_value_kc,
+                    
+                    rv_passed_value_kck=rv_passed_value_kck,
+                    rv_passed_value_rck=rv_passed_value_rck,
+                    
+                    rv_passed_value_kcn=rv_passed_value_kcn,
+                    rv_passed_value_rcn=rv_passed_value_rcn,
+                    
+                    rv_passed_value_kcu=rv_passed_value_kcu,
+                    rv_passed_value_rcu=rv_passed_value_rcu,
                 )
                 iv_daily.save()
                 
@@ -835,26 +942,43 @@ class ImpliedVolatilityView:
     def export_excel(request):
         try:
             iv_daily_datas = ImpliedVolatility.objects.all().order_by('timestamp')
-            
+            target_timezone = timezone.get_current_timezone()
             data = []
             for iv_daily_data in iv_daily_datas:
                 # Format date fields to dd/mm/yyyy
                 def format_date(date_field):
-                    if date_field:
-                        if isinstance(date_field, (datetime.date, datetime.datetime)):
-                            return date_field.strftime('%d/%m/%Y')
-                        # Nếu là string, cố gắng parse và format lại
-                        try:
-                            parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
-                            return parsed_date.strftime('%d/%m/%Y')
-                        except:
-                            return str(date_field)
-                    return ""
+                    if not date_field:
+                        return ""
+                    
+                    # Nếu là datetime (có giờ phút giây)
+                    if isinstance(date_field, datetime.datetime):
+                        # Kiểm tra xem datetime đã có thông tin timezone (aware) chưa
+                        if timezone.is_aware(date_field):
+                            # Chuyển đổi chính xác sang GMT+7 trước khi format
+                            date_field = timezone.localtime(date_field, target_timezone)
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu chỉ là object date thuần túy (không có giờ)
+                    elif isinstance(date_field, datetime.date):
+                        return date_field.strftime('%d/%m/%Y')
+                    
+                    # Nếu là string, ép kiểu và parse thử
+                    try:
+                        parsed_date = datetime.datetime.strptime(str(date_field), '%Y-%m-%d')
+                        return parsed_date.strftime('%d/%m/%Y')
+                    except ValueError:
+                        return str(date_field)
                 
                 data.append({
                     'Date': format_date(iv_daily_data.timestamp),
-                    'KC': iv_daily_data.implied_volatility_kc,
-                    'RC': iv_daily_data.implied_volatility_rc,
+                    'KCH': iv_daily_data.implied_volatility_kc * 100 if iv_daily_data.implied_volatility_kc else "",
+                    'RCH': iv_daily_data.implied_volatility_rc * 100 if iv_daily_data.implied_volatility_rc else "",
+                    'KCK': iv_daily_data.implied_volatility_kck * 100 if iv_daily_data.implied_volatility_kck else "",
+                    'RCK': iv_daily_data.implied_volatility_rck * 100 if iv_daily_data.implied_volatility_rck else "",
+                    'KCN': iv_daily_data.implied_volatility_kcn * 100 if iv_daily_data.implied_volatility_kcn else "",
+                    'RCN': iv_daily_data.implied_volatility_rcn * 100 if iv_daily_data.implied_volatility_rcn else "",
+                    'KCU': iv_daily_data.implied_volatility_kcu * 100 if iv_daily_data.implied_volatility_kcu else "",
+                    'RCU': iv_daily_data.implied_volatility_rcu * 100 if iv_daily_data.implied_volatility_rcu else "",
                 })
             
             df = pd.DataFrame(data)
@@ -878,8 +1002,7 @@ class ImpliedVolatilityView:
                 
                 # Dòng 3: Headers
                 headers = [
-                    'Date', 'Open', 'High', 'Low', 'Close', 
-                    'Volatility open', 'Volatility high', 'Volatility low', 'Volatility close'
+                    'Date', 'KCH', 'RCH', 'KCK', 'RCK', 'KCN', 'RCN', 'KCU', 'RCU'
                 ]
                 
                 for col, header in enumerate(headers, 1):

@@ -1,0 +1,286 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'components/common/confirm_modal.html' %}
+<script src="{% static 'js/confirm_modal.js' %}"></script>
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Tính toán</a></li>
+    </ol>
+    <div class="panel">
+    <h5 class="mb-5 text-lg font-semibold dark:text-white-light">
+        Prompt Information Geometry
+    </h5>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="hidden fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 w-full h-full">
+        <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span class="text-lg font-medium">Đang xử lý...</span>
+        </div>
+    </div>
+    <!-- Result Screen -->
+    <div id="resultScreen" class="hidden fixed inset-0 bg-black/60 flex items-start justify-center z-50 w-full h-full overflow-y-auto py-10">
+        <div class="bg-white p-6 rounded-lg w-4/5 max-h-[90vh] overflow-y-auto">
+            <div class="mb-4">
+                <!-- Tabs container -->
+                <div id="tabsContainer" class="border-b mb-4 flex flex-wrap gap-2"></div>
+
+                <!-- Content container -->
+                <div id="tabContents"></div>
+            </div>
+
+            <!-- Nút Close -->
+            <div class="flex justify-center mt-6">
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('resultScreen').classList.add('hidden')">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <div>
+        <form
+            id="postForm"
+            method="post"
+            enctype="multipart/form-data"
+            action="{% url 'create-prompt-3' %}"
+            class="space-y-5"
+        >
+            {% csrf_token %}
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="w-full space-y-6">
+                    <!-- Comco ref, Buyer ref, Contract date, Price -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="mt-2" for="date">Date</label>
+                            <div class="flex items-center gap-2">
+                                <input
+                                    id="date"
+                                    type="date"
+                                    name="date"
+                                    class="form-input"
+                                ></input>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="mt-2" for="farm_gate_low">Farm Gate Low</label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        id="farm_gate_low"
+                                        type="number"
+                                        name="farm_gate_low"
+                                        class="form-input"
+                                    ></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mt-2" for="farm_gate_high">Farm Gate High</label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        id="farm_gate_high"
+                                        type="number"
+                                        name="farm_gate_high"
+                                        class="form-input"
+                                    ></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mt-2" for="midstream_low">Midstream Low</label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        id="midstream_low"
+                                        type="number"
+                                        name="midstream_low"
+                                        class="form-input"
+                                    ></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mt-2" for="midstream_high">Midstream High</label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        id="midstream_high"
+                                        type="number"
+                                        name="midstream_high"
+                                        class="form-input"
+                                    ></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mt-2" for="differential_ask">Differential Ask</label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        id="differential_ask"
+                                        type="number"
+                                        name="differential_ask"
+                                        class="form-input"
+                                    ></input>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mt-2" for="differential_bid">Differential Bid</label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        id="differential_bid"
+                                        type="number"
+                                        name="differential_bid"
+                                        class="form-input"
+                                    ></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="mt-2" for="paragraph">Paragraph</label>
+                            <div class="flex items-center gap-2">
+                                <textarea
+                                    id="paragraph"
+                                    type="text"
+                                    name="paragraph"
+                                    class="form-input"
+                                    rows="20"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            <div class="mt-6 flex justify-end">
+            <button type="submit" onclick="submitForm(event)" class="btn btn-primary">Tính toán</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+<script>
+    function showMessage(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            // didClose: () => {
+            //     window.location.reload();
+            // }
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+
+    function submitForm(event) {
+        const postForm = document.getElementById('postForm');
+        event.preventDefault();
+
+        formData = new FormData(postForm);
+        showLoadingScreen();
+        fetch(postForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage(data.message, data.status);
+            if (data.status === 'success') {
+                document.getElementById('resultScreen').classList.remove('hidden');
+                renderResults(data.result);
+            }
+            hideLoadingScreen();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Submit failed', 'error');
+            hideLoadingScreen();
+        });
+    }
+
+    function showLoadingScreen() {
+        document.getElementById('loadingScreen').classList.remove('hidden');
+    }
+
+    function hideLoadingScreen() {
+        document.getElementById('loadingScreen').classList.add('hidden');
+        // document.getElementById('pdfFileInput').value = '';
+        $("#filePreviewName").text('Click to upload file');
+    }
+
+    function copyToClipboard(text) {
+        console.log(text);
+        navigator.clipboard.writeText(text);
+        showMessage('Copied to clipboard', 'success');
+    }
+    function renderResults(result) {
+        const tabsContainer = document.getElementById('tabsContainer');
+        const tabContents = document.getElementById('tabContents');
+
+        tabsContainer.innerHTML = "";
+        tabContents.innerHTML = "";
+
+        // Create AI Response tab
+        const aiTabBtn = document.createElement('button');
+        aiTabBtn.textContent = 'AI Response';
+        aiTabBtn.classList.add('px-4', 'py-2', 'rounded-t', 'hover:bg-gray-100', 'hover:text-black', 'transition', 'bg-black', 'text-white');
+        aiTabBtn.onclick = () => showTab(0);
+        tabsContainer.appendChild(aiTabBtn);
+
+        // Create Prompt Used tab
+        const promptTabBtn = document.createElement('button');
+        promptTabBtn.textContent = 'Prompt Used';
+        promptTabBtn.classList.add('px-4', 'py-2', 'rounded-t', 'hover:bg-gray-100', 'hover:text-black', 'transition', 'bg-gray-200');
+        promptTabBtn.onclick = () => showTab(1);
+        tabsContainer.appendChild(promptTabBtn);
+
+        // AI Response content
+        const aiContentDiv = document.createElement('div');
+        aiContentDiv.id = 'tab-content-0';
+        aiContentDiv.classList.add('border', 'p-4', 'rounded-b', 'bg-gray-50', 'space-y-4');
+        aiContentDiv.innerText = result.ai_response;
+        
+        tabContents.appendChild(aiContentDiv);
+
+        // Prompt Used content
+        const buttonCopy = document.createElement('button');
+        buttonCopy.textContent = 'Copy';
+        buttonCopy.classList.add('absolute', 'top-2', 'right-2', 'px-2', 'py-1', 'text-xs', 'bg-gray-200', 'hover:bg-gray-100', 'rounded', 'w-16', 'h-16');
+        buttonCopy.onclick = () => copyToClipboard(result.prompt_used);
+
+        const promptContentDiv = document.createElement('div');
+        promptContentDiv.id = 'tab-content-1';
+        promptContentDiv.classList.add('hidden', 'border', 'p-4', 'rounded-b', 'bg-gray-50', 'whitespace-pre-wrap', 'relative');
+        promptContentDiv.innerText = result.prompt_used;
+        promptContentDiv.appendChild(buttonCopy);
+        tabContents.appendChild(promptContentDiv);
+        
+    }
+
+    function showTab(activeIndex) {
+        const tabs = document.querySelectorAll('#tabsContainer button');
+        const contents = document.querySelectorAll('#tabContents > div');
+        tabs.forEach((tab, i) => {
+            if (i === activeIndex) {
+                tab.classList.add('bg-black', 'text-white');
+                tab.classList.remove('bg-gray-200');
+                contents[i].classList.remove('hidden');
+            } else {
+                tab.classList.remove('bg-black', 'text-white');
+                tab.classList.add('bg-gray-200');
+                contents[i].classList.add('hidden');
+            }
+        });
+    }
+</script>
+{% endblock %}

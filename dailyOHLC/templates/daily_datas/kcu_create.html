@@ -31,7 +31,7 @@
       </a>
     </li>
     <li class="before:content-['/'] before:px-1.5">
-      <a href="{% url 'daily-ohlc-kck-list' %}">Daily KCK</a>
+      <a href="{% url 'daily-ohlc-kcu-list' %}">Daily KCU</a>
     </li>
     <li class="before:content-['/'] before:px-1.5">
       <a
@@ -47,7 +47,7 @@
         id="documentForm"
         method="post"
         enctype="multipart/form-data"
-        action="{% url 'daily-ohlc-kck-create' %}"
+        action="{% url 'daily-ohlc-kcu-create' %}"
         class="space-y-5"
       >
         {% csrf_token %}
@@ -70,7 +70,7 @@
                 <div class="flex items-center gap-2">
                     <input
                         id="open"
-                        type="text"
+                        type="number"
                         name="open"
                         class="form-input"
                     />
@@ -81,7 +81,7 @@
                 <div class="flex items-center gap-2">
                     <input
                         id="high"
-                        type="text"
+                        type="number"
                         name="high"
                         class="form-input"
                     />
@@ -92,7 +92,7 @@
                 <div class="flex items-center gap-2">
                     <input
                         id="low"
-                        type="text"
+                        type="number"
                         name="low"
                         class="form-input"
                     />
@@ -103,7 +103,7 @@
                 <div class="flex items-center gap-2">
                     <input
                         id="close"
-                        type="text"
+                        type="number"
                         name="close"
                         class="form-input"
                     />

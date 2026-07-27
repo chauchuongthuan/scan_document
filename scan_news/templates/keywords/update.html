@@ -1,0 +1,211 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+{% block content %}
+<div class="max-w-6xl p-6 space-y-8">
+  <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+    <form method="POST" class="flex flex-wrap items-end gap-4">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_group" />
+      <div>
+        <label class="block text-sm font-bold text-blue-800"
+          >Tên Nhóm Mới</label
+        >
+        <input
+          type="text"
+          name="new_group_name"
+          required
+          class="border rounded p-2 text-sm w-48"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-blue-800">Log Tag</label>
+        <input
+          type="text"
+          name="new_group_tag"
+          required
+          class="border rounded p-2 text-sm w-48"
+          placeholder="VD: TIN CÀ PHÊ"
+        />
+      </div>
+      <button
+        type="submit"
+        class="btn btn-success"
+      >
+        + Tạo Group
+      </button>
+    </form>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+    {% for group in groups %}
+    <div
+      class="border rounded-xl shadow-sm bg-white overflow-hidden flex flex-col"
+    >
+      <div class="bg-gray-100 p-3 border-b flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-gray-800">{{ group.name }}</h3>
+          <span class="text-xs text-blue-600 font-mono"
+            >Tag: {{ group.log_tag }}</span
+          >
+        </div>
+        <form method="POST" onsubmit="return confirm('Xóa nhóm này?');">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_group" />
+          <input type="hidden" name="group_id" value="{{ group.id }}" />
+          <button type="submit" class="text-red-500 hover:text-red-700">
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              ></path>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="p-4 flex-grow">
+        <div class="flex flex-wrap gap-2 mb-4">
+          {% for k in group.get_keyword_list %}
+          <div
+            class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-2 group"
+          >
+            {{ k }}
+            <form method="POST" class="inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="remove_keyword" />
+              <input type="hidden" name="group_id" value="{{ group.id }}" />
+              <input type="hidden" name="keyword_value" value="{{ k }}" />
+              <button
+                type="submit"
+                class="text-green-600 hover:text-red-600 font-bold"
+              >
+                ×
+              </button>
+            </form>
+          </div>
+          {% empty %}
+          <span class="text-gray-400 text-sm italic">Chưa có từ khóa nào</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="p-3 bg-gray-50 border-t">
+        <form method="POST" class="flex gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_keyword" />
+          <input type="hidden" name="group_id" value="{{ group.id }}" />
+          <input
+            type="text"
+            name="new_keyword"
+            required
+            placeholder="Thêm từ khóa..."
+            class="flex-grow text-sm border rounded p-1.5 focus:ring-2 focus:ring-green-300 outline-none"
+          />
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Thêm
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div
+    class="mt-12 bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-300"
+  >
+    <h2 class="text-xl font-bold mb-4 text-gray-700">
+      ⚙️ Cấu hình Logic kết hợp (Rules)
+    </h2>
+
+    <form
+      method="POST"
+      class="bg-white p-4 rounded shadow-sm mb-6 flex flex-wrap gap-4 items-end"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_rule" />
+      <div>
+        <label class="block text-xs font-bold uppercase">Tên Quy Tắc</label>
+        <input
+          type="text"
+          name="rule_name"
+          placeholder="VD: Thiên tai + Vùng trồng"
+          class="border rounded p-2 text-sm"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-bold uppercase"
+          >Nhãn Log (Title)</label
+        >
+        <input
+          type="text"
+          name="rule_tag"
+          placeholder="VD: THIÊN TAI CA PHÊ"
+          class="border rounded p-2 text-sm"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-bold uppercase">Logic</label>
+        <select name="logic_type" class="border rounded p-2 text-sm">
+          <option value="OR">HOẶC (OR)</option>
+          <option value="AND">VÀ (AND)</option>
+        </select>
+      </div>
+      <div class="flex-grow">
+        <label class="block text-xs font-bold uppercase"
+          >Chọn Nhóm kết hợp</label
+        >
+        <div class="flex flex-wrap gap-2 mt-1">
+          {% for group in groups %}
+          <label class="text-xs bg-gray-100 p-1 rounded border cursor-pointer">
+            <input type="checkbox" name="group_ids" value="{{ group.id }}" /> {{ group.name }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="btn btn-success"
+      >
+        + Tạo Logic
+      </button>
+    </form>
+
+    <div class="grid grid-cols-1 gap-4">
+      {% for rule in rules %}
+      <div
+        class="flex justify-between items-center bg-white p-3 border rounded shadow-sm"
+      >
+        <div>
+          <span class="font-bold text-indigo-700">{{ rule.name }}</span>
+          <span class="mx-2 text-gray-400">|</span>
+          <span class="text-xs font-mono bg-yellow-100 px-2 py-0.5 rounded"
+            >Log: {{ rule.log_tag }}</span
+          >
+          <div class="text-xs mt-1 text-gray-500">
+            Logic:
+            <span class="font-bold text-red-500">{{ rule.logic_type }}</span>
+            giữa: {% for g in rule.keyword_groups.all %}
+            <span class="underline">#{{ g.name }}</span>{% if not forloop.last %}, {% endif %} {% endfor %}
+          </div>
+        </div>
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_rule" />
+          <input type="hidden" name="rule_id" value="{{ rule.id }}" />
+          <button type="submit" class="text-red-400 hover:text-red-600">
+            Xóa
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

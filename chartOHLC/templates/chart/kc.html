@@ -7,6 +7,12 @@
         <div class="flex justify-between items-center mb-4">
             <h5 class="text-lg font-semibold">Live Chart: <span id="currentSymbol">KCU2026</span></h5>
         </div>
+        <button class="btn btn-success w-1/12" onclick="exportExcel()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M8.71 7.71L11 5.41V15a1 1 0 0 0 2 0V5.41l2.29 2.3a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42l-4-4a1 1 0 0 0-.33-.21a1 1 0 0 0-.76 0a1 1 0 0 0-.33.21l-4 4a1 1 0 1 0 1.42 1.42ZM21 14a1 1 0 0 0-1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4a1 1 0 0 0-2 0v4a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-4a1 1 0 0 0-1-1Z"/>
+            </svg>
+            Export
+        </button>
         <div id="chartContainer" style="width: 100%; height: 500px;"></div>
     </div>
 </div>
@@ -62,5 +68,34 @@
         initChart();
         loadChart();
     };
+
+    async function exportExcel() {
+        const response = await fetch('{% url "export-excel-kc" %}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        }).then(response => {
+        if (response.ok) {
+            return response.blob();
+        }
+        throw new Error('Export failed');
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `chart_kc_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            showMessageFileExcel('Export Excel thành công!', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessageFileExcel('Export Excel thất bại!', 'error');
+        });
+    }
 </script>
 {% endblock %}

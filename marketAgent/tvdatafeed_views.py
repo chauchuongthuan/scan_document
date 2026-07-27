@@ -12,7 +12,6 @@ from django.shortcuts import render
 from tvDatafeed import TvDatafeed, Interval
 tv = TvDatafeed()
 import datetime
-import math
 from chartOHLC.models import OHLCDataKC, OHLCDataRC
 from django.utils import timezone # Import thư viện timezone của Django
 import pytz
@@ -38,26 +37,63 @@ class TVGetDatafeedView(View):
                     interval_input = Interval.in_daily
                 elif interval_input_text == "in_1_minute":
                     interval_input = Interval.in_1_minute
+                elif interval_input_text == "in_5_minute":
+                    interval_input = Interval.in_5_minute
                 elif interval_input_text == "in_monthly":
                     interval_input = Interval.in_monthly
 
                 if symbol_text == "KCH2026":
                     exchange_text = "ICEUS"
-                elif symbol_text == "KCK2026":
-                    exchange_text = "ICEUS"
                 elif symbol_text == "RCH2026":
                     exchange_text = "ICEEUR"
+
+                elif symbol_text == "KCK2026":
+                    exchange_text = "ICEUS"
                 elif symbol_text == "RCK2026":
                     exchange_text = "ICEEUR"
+                
+                elif symbol_text == "KCN2026":
+                    exchange_text = "ICEUS"
+                elif symbol_text == "RCN2026":
+                    exchange_text = "ICEEUR"
+
                 elif symbol_text == "KCU2026":
                     exchange_text = "ICEUS"
                 elif symbol_text == "RCU2026":
                     exchange_text = "ICEEUR"
+
                 elif symbol_text == "VNFER":
                     exchange_text = "ECONOMICS"
+
+                elif symbol_text == "USOIL":
+                    exchange_text = "TVC"
+
+                elif symbol_text == "UKOIL":
+                    exchange_text = "TVC"
+
+                elif symbol_text == "RC1!":
+                    exchange_text = "ICEEUR"
+                elif symbol_text == "RC2!":
+                    exchange_text = "ICEEUR"
+
+                elif symbol_text == "KC1!":
+                    exchange_text = "ICEUS"
+                elif symbol_text == "KC2!":
+                    exchange_text = "ICEUS"
+                
+                elif symbol_text == "USDVND":
+                    exchange_text = "FX_IDC"
+
+                elif symbol_text == "UR2!":
+                    exchange_text = "ZCE"
+                
+                elif symbol_text == "BDI":
+                    exchange_text = "INDEX"
                 else:
                     exchange_text = "ICEUS"
 
+                print("symbol_text:", symbol_text)
+                print("exchange_text:", exchange_text)
                 df = tv.get_hist(
                     symbol=symbol_text,
                     exchange=exchange_text,
@@ -65,7 +101,7 @@ class TVGetDatafeedView(View):
                     n_bars=int(n_bars_input)
                 )
                 
-                print(df)
+                print("df:::", df)
                 if save_change == 'true' and df is not None:
                     df = df.reset_index().drop_duplicates(subset=['datetime'], keep='last')
                     # Chuẩn bị danh sách objects
@@ -73,7 +109,7 @@ class TVGetDatafeedView(View):
                     for _, row in df.iterrows():
                         naive_dt = row['datetime']
                         timezone_dt = timezone.make_aware(naive_dt, pytz.timezone('Asia/Ho_Chi_Minh')).replace(microsecond=0)
-                        model_class = OHLCDataKC if symbol_text in ["KCH2026", "KCK2026", "KCU2026"] else OHLCDataRC
+                        model_class = OHLCDataKC if symbol_text in ["KCH2026", "KCK2026", "KCU2026", "KCN2026"] else OHLCDataRC
                         objs.append(model_class(
                             symbol=symbol_text,
                             timestamp=timezone_dt,
@@ -174,6 +210,8 @@ class TVUnfilledGapView(View):
                     interval_input = Interval.in_daily
                 elif interval_input_text == "in_1_minute":
                     interval_input = Interval.in_1_minute
+                elif interval_input_text == "in_5_minute":
+                    interval_input = Interval.in_5_minute
                     
                 if symbol_text == "":
                     return JsonResponse({
@@ -183,16 +221,28 @@ class TVUnfilledGapView(View):
                 
                 if symbol_text == "KCH2026":
                     exchange_text = "ICEUS"
-                elif symbol_text == "KCK2026":
-                    exchange_text = "ICEUS"
                 elif symbol_text == "RCH2026":
                     exchange_text = "ICEEUR"
+
+                elif symbol_text == "KCK2026":
+                    exchange_text = "ICEUS"
                 elif symbol_text == "RCK2026":
                     exchange_text = "ICEEUR"
+                
+                elif symbol_text == "KCN2026":
+                    exchange_text = "ICEUS"
+                elif symbol_text == "RCN2026":
+                    exchange_text = "ICEEUR"
+
                 elif symbol_text == "KCU2026":
                     exchange_text = "ICEUS"
                 elif symbol_text == "RCU2026":
                     exchange_text = "ICEEUR"
+
+                elif symbol_text == "KC1!":
+                    exchange_text = "ICEUS"
+                elif symbol_text == "KC2!":
+                    exchange_text = "ICEUS"
                 else:
                     exchange_text = "ICEUS"
                 

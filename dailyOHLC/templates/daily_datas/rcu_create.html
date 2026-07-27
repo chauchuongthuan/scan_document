@@ -31,7 +31,7 @@
       </a>
     </li>
     <li class="before:content-['/'] before:px-1.5">
-      <a href="{% url 'daily-ohlc-rck-list' %}">Daily RCK</a>
+      <a href="{% url 'daily-ohlc-rcu-list' %}">Daily RCU</a>
     </li>
     <li class="before:content-['/'] before:px-1.5">
       <a
@@ -47,7 +47,7 @@
         id="documentForm"
         method="post"
         enctype="multipart/form-data"
-        action="{% url 'daily-ohlc-rck-create' %}"
+        action="{% url 'daily-ohlc-rcu-create' %}"
         class="space-y-5"
       >
         {% csrf_token %}
@@ -70,7 +70,7 @@
                 <div class="flex items-center gap-2">
                     <input
                         id="open"
-                        type="text"
+                        type="number"
                         name="open"
                         class="form-input"
                     />
@@ -81,7 +81,7 @@
                 <div class="flex items-center gap-2">
                     <input
                         id="high"
-                        type="text"
+                        type="number"
                         name="high"
                         class="form-input"
                     />
@@ -92,7 +92,7 @@
                 <div class="flex items-center gap-2">
                     <input
                         id="low"
-                        type="text"
+                        type="number"
                         name="low"
                         class="form-input"
                     />
@@ -103,7 +103,7 @@
                 <div class="flex items-center gap-2">
                     <input
                         id="close"
-                        type="text"
+                        type="number"
                         name="close"
                         class="form-input"
                     />
@@ -120,7 +120,7 @@
   </div>
 </div>
 
-<script defer srck="{% static 'cassets/js/sweetalert.min.js' %}"></script>
+<script defer src="{% static 'cassets/js/sweetalert.min.js' %}"></script>
 <script>
     function submitForm(event) {
         const documentForm = document.getElementById('documentForm');

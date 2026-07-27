@@ -212,23 +212,19 @@ class ExportIceRCDataView(APIView):
                 ice_rc_stock_datas = IceRCStockData.objects.all().order_by('date')
             
             data = []
-            
+
             for ice_rc_stock_data in ice_rc_stock_datas:
-                # Định dạng date: DateField của Django là datetime.date object
                 date_formatted = ice_rc_stock_data.date.strftime('%d/%m/%Y') if ice_rc_stock_data.date else ""
                 
-                # Xử lý trường hợp lots_with_val_cert là None (NULL)
-                lots_with_val_cert_value = str(ice_rc_stock_data.lots_with_val_cert) if ice_rc_stock_data.lots_with_val_cert is not None else ''
-                lots_non_tend_value = str(ice_rc_stock_data.lots_non_tend) if ice_rc_stock_data.lots_non_tend is not None else ''
-                lots_suspended_value = str(ice_rc_stock_data.lots_suspended) if ice_rc_stock_data.lots_suspended is not None else ''
-
+                # Giữ nguyên giá trị số (float hoặc int), KHÔNG dùng str()
+                # Nếu bạn muốn ô trống khi dữ liệu NULL, hãy dùng None
                 data.append({
                     'date': date_formatted,
-                    'lots_with_val_cert': lots_with_val_cert_value,
-                    'lots_non_tend': lots_non_tend_value,
-                    'lots_suspended': lots_suspended_value
+                    'lots_with_val_cert': ice_rc_stock_data.lots_with_val_cert,
+                    'lots_non_tend': ice_rc_stock_data.lots_non_tend,          
+                    'lots_suspended': ice_rc_stock_data.lots_suspended         
                 })
-            
+
             df = pd.DataFrame(data)
             
             # 2. Định nghĩa tên file và đường dẫn cục bộ
@@ -269,17 +265,15 @@ class ExportIceRCDataView(APIView):
                     cell.font = header_font
                     cell.alignment = center_align
                 
-                # Ghi dữ liệu
                 if not df.empty:
                     for r_idx, row_data in enumerate(df.itertuples(), 4):
-                        # Ghi dữ liệu ngày (cột 1)
-                        worksheet.cell(row=r_idx, column=1, value=row_data[1])
-                        # Ghi dữ liệu lots_with_val_cert (cột 2)
-                        worksheet.cell(row=r_idx, column=2, value=row_data[2])
-                        # Ghi dữ liệu lots_non_tend (cột 3)
-                        worksheet.cell(row=r_idx, column=3, value=row_data[3])
-                        # Ghi dữ liệu lots_suspended (cột 4)
-                        worksheet.cell(row=r_idx, column=4, value=row_data[4])
+                        # Cột 1: Ngày tháng (Text)
+                        worksheet.cell(row=r_idx, column=1, value=row_data.date)
+                        
+                        # Cột 2, 3, 4: Số (Number)
+                        worksheet.cell(row=r_idx, column=2, value=row_data.lots_with_val_cert)
+                        worksheet.cell(row=r_idx, column=3, value=row_data.lots_non_tend)
+                        worksheet.cell(row=r_idx, column=4, value=row_data.lots_suspended)
                         
                 # Tùy chỉnh độ rộng cột
                 worksheet.column_dimensions['A'].width = 15

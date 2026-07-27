@@ -1,5 +1,6 @@
 {% extends 'admin/layouts/admin.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block content %}
 {% include 'components/common/confirm_modal.html' %}
@@ -34,13 +35,16 @@
             </div>
         </form>
     </div>
+    <div class="text-lg">
+        Change {{last_data.date}}: stock kc {% if pre_last_data.stock|floatformat:0 > last_data.stock|floatformat:0 %}giảm{% elif pre_last_data.stock|floatformat:0 < last_data.stock|floatformat:0 %}tăng{% else %}không đổi{% endif %} {{pre_last_data.stock|floatformat:0|intcomma}} -> {{last_data.stock|floatformat:0|intcomma}}
+        : {% if change >= 0 %}tăng{% else %}giảm{% endif %} {{change|floatformat:0|intcomma}} bags
+    </div>
     <div class="panel">
         <table class="table-striped table-hover"> 
             <thead> 
                 <tr> 
                     <th>Date</th>
                     <th>Stock</th>
-
                 </tr> 
             </thead> 
             <tbody> 
@@ -48,9 +52,7 @@
                 {% for data in datas %} 
                 <tr> 
                     <td>{{ data.date }}</td>
-                    <td>{{ data.stock }}</td>
-                    
-                    
+                    <td>{{ data.stock | floatformat:0 | intcomma }}</td>
                 </tr> 
                 {% endfor %} 
             </tbody> 
