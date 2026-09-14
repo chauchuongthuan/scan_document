@@ -56,19 +56,37 @@ class NewsScanner:
 
         # --- CẬP NHẬT NGUỒN RSS ---
         self.rss_sources = {
+            "Google News (Báo Daklak)": "https://news.google.com/rss/search?q=when:24h+site:baodaklak.vn&hl=vi&gl=VN&ceid=VN:vi",
+
+            "Google News (Báo Gia Lai)": "https://news.google.com/rss/search?q=when:24h+site:baogialai.com.vn&hl=vi&gl=VN&ceid=VN:vi",
+
+            "Google News (Báo Quãng Ngãi)": "https://news.google.com/rss/search?q=when:24h+site:baoquangngai.vn&hl=vi&gl=VN&ceid=VN:vi",
+
+            "Google News (Báo Quảng Trị)": "https://news.google.com/rss/search?q=when:24h+site:baoquangtri.vn&hl=vi&gl=VN&ceid=VN:vi",
+
+            "Google News (Báo Đồng Nai)": "https://news.google.com/rss/search?q=when:24h+site:baodongnai.com.vn&hl=vi&gl=VN&ceid=VN:vi",
+
+            "Google News (Báo Sơn La)": "https://news.google.com/rss/search?q=when:24h+site:baosonla.vn&hl=vi&gl=VN&ceid=VN:vi",
+
+            "Google News (Báo Điện Biên)": "https://news.google.com/rss/search?q=when:24h+site:dienbientv.vn&hl=vi&gl=VN&ceid=VN:vi",
+
             "Nông nghiệp môi trường (Thời sự)": "https://nongnghiepmoitruong.vn/thoi-su.rss",
             "Nông nghiệp môi trường (Nông nghiệp)": "https://nongnghiepmoitruong.vn/nong-nghiep.rss",
             "Nông nghiệp môi trường (Nông nghiệp & Môi trường)": "https://nongnghiepmoitruong.vn/thoi-su-nong-nghiep-moi-truong.rss",
+
+            "Báo Lâm Đồng (Thuế - Tài chính)": "https://baolamdong.vn/rss/kinh-te/thue-tai-chinh",
+            "Báo Lâm Đồng (Kinh tế)": "https://baolamdong.vn/rss/kinh-te",
+            "Báo Lâm Đồng (Đời sống)": "https://baolamdong.vn/rss/doi-song",
+            "Báo Lâm Đồng (Tin tức Lâm Đồng)": "https://baolamdong.vn/rss/video/tin-tuc-lam-dong",
+            "Báo Lâm Đồng (Thời sự)": "https://baolamdong.vn/rss/thoi-su",
+            "Báo Lâm Đồng (Thời sự Lâm Đồng)": "https://baolamdong.vn/rss/thoi-su/thoi-su-lam-dong",
+
             "Báo Chính Phủ (Home)": "https://baochinhphu.vn/home.rss",
             "Báo Chính Phủ (Xã hội)": "https://baochinhphu.vn/xa-hoi.rss",
             "Báo Chính Phủ (Thời sự)": "https://baochinhphu.vn/thoi-su.rss",
+
             "VnExpress (Thời sự)": "https://vnexpress.net/rss/thoi-su.rss",
-            "VnExpress (Tin mới nhất)": "https://vnexpress.net/rss/tin-moi-nhat.rss",
-            "Tuổi Trẻ": "https://tuoitre.vn/rss/thoi-su.rss",
-            "Thanh Niên": "https://thanhnien.vn/rss/thoi-su.rss",
-            "VietnamNet": "https://vietnamnet.vn/rss/thoi-su.rss",
-            "Pháp luật": "https://plo.vn/rss/thoi-su-1.rss",
-            
+            "VnExpress (Tin mới nhất)": "https://vnexpress.net/rss/tin-moi-nhat.rss",    
         }
 
     def normalize_link(self, link):

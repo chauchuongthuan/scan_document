@@ -52,3 +52,37 @@ class IceRCStockData(models.Model):
 
     def __str__(self):
         return f"Data for {self.date}"
+
+class GapKCData(models.Model):
+    symbol = models.CharField(max_length=20)
+    index = models.IntegerField(primary_key=True)
+    timestamp = models.DateTimeField(null=True, blank=True)
+    type = models.TextField(null=True, blank=True)
+    gap_low = models.FloatField(null=True, blank=True)
+    gap_high = models.FloatField(null=True, blank=True)
+    gap_size = models.FloatField(null=True, blank=True)
+    filled = models.BooleanField(default=False)
+    time_filled = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['index']
+        verbose_name = 'GapKCData'
+        verbose_name_plural = 'GapKCData'
+        db_table = 'gap_kc_data'
+
+class GapRCData(models.Model):
+    symbol = models.CharField(max_length=20)
+    index = models.IntegerField(primary_key=True)
+    timestamp = models.DateTimeField(null=True, blank=True)
+    type = models.TextField(null=True, blank=True)
+    gap_low = models.FloatField(null=True, blank=True)
+    gap_high = models.FloatField(null=True, blank=True)
+    gap_size = models.FloatField(null=True, blank=True)
+    filled = models.BooleanField(default=False)
+    time_filled = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['index']
+        verbose_name = 'GapRCData'
+        verbose_name_plural = 'GapRCData'
+        db_table = 'gap_rc_data'

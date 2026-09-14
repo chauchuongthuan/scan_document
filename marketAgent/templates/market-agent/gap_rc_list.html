@@ -1,0 +1,266 @@
+{% extends 'admin/layouts/admin.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'components/common/confirm_modal.html' %}
+<script src="{% static 'js/confirm_modal.js' %}"></script>
+<div class="p-4">
+    <ol class="flex text-gray-500 font-semibold dark:text-white-dark pb-4">
+        <li>
+            <a href="javascript:;" class="hover:text-gray-500/70 dark:hover:text-white-dark/70">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  shrink-0">
+                    <path opacity="0.5" d="M2 12.2039C2 9.91549 2 8.77128 2.5192 7.82274C3.0384 6.87421 3.98695 6.28551 5.88403 5.10813L7.88403 3.86687C9.88939 2.62229 10.8921 2 12 2C13.1079 2 14.1106 2.62229 16.116 3.86687L18.116 5.10812C20.0131 6.28551 20.9616 6.87421 21.4808 7.82274C22 8.77128 22 9.91549 22 12.2039V13.725C22 17.6258 22 19.5763 20.8284 20.7881C19.6569 22 17.7712 22 14 22H10C6.22876 22 4.34315 22 3.17157 20.7881C2 19.5763 2 17.6258 2 13.725V12.2039Z" stroke="currentColor" stroke-width="1.5"></path>
+                    <path d="M12 15L12 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+            </a>
+        </li>
+        <li class="before:content-['/'] before:px-1.5"><a href="javascript:;">Gap RC</a></li>
+    </ol>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="hidden fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 w-full h-full">
+        <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span class="text-lg font-medium">Đang xử lý...</span>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="flex items-center justify-end gap-4 mb-4">
+            <!-- Export Button -->
+            <button class="btn btn-success w-1/12" onclick="exportExcel()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M8.71 7.71L11 5.41V15a1 1 0 0 0 2 0V5.41l2.29 2.3a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42l-4-4a1 1 0 0 0-.33-.21a1 1 0 0 0-.76 0a1 1 0 0 0-.33.21l-4 4a1 1 0 1 0 1.42 1.42ZM21 14a1 1 0 0 0-1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4a1 1 0 0 0-2 0v4a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-4a1 1 0 0 0-1-1Z"/>
+                </svg>
+                Export
+            </button>
+        </div>
+        <!-- Modal Import -->
+        <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg w-96 border">
+                <h2 class="text-lg font-bold mb-4">Import Excel</h2>
+                <form id="importForm">
+                    <input type="file" name="excel_file" id="excelFileInput" accept=".xlsx,.xls" required class="mb-4">
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="hideImportModal()" class="btn btn-sm btn-outline-danger">Hủy</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <table class="table-striped table-hover"> 
+            <thead> 
+                <tr> 
+                    <th class="!text-center">Symbol</th> 
+                    <th class="!text-center">Timestamp</th> 
+                    <th class="!text-center">Type</th> 
+                    <th class="!text-center">Gap low</th> 
+                    <th class="!text-center">Gap high</th> 
+                    <th class="!text-center">Gap size</th> 
+                    <th class="!text-center">Filled</th> 
+                    <th class="!text-center">Time Filled</th> 
+                
+                </tr> 
+            </thead> 
+            <tbody> 
+                {% csrf_token %} 
+                {% for data in datas %} 
+                <tr> 
+                    <td class="!text-center">{{ data.symbol }}</td>
+                    <td class="!text-center">{{ data.timestamp|date:"Y-m-d h:i a" }}</td>
+                    <td class="!text-center">{{ data.type }}</td>
+                    <td class="!text-center">{{ data.gap_low }}</td>
+                    <td class="!text-center">{{ data.gap_high }}</td>
+                    <td class="!text-center">{{ data.gap_size|floatformat:4 }}</td>
+                    <td class="!text-center">{{ data.filled }}</td>
+                    <td class="!text-center">{{ data.time_filled|date:"Y-m-d h:i a" }}</td>
+                    
+                </tr> 
+                {% endfor %} 
+            </tbody> 
+        </table>
+        {% if datas.has_other_pages %}
+        <div class="flex items-center justify-between border-t border-[#e0e6ed] px-4 py-4 dark:border-[#1b2e4b]">
+            <div class="flex items-center gap-3 w-[300px]">
+                <form id="perPageForm" method="get" class="flex items-center">
+                    <select name="per_page" id="per_page" class="form-select w-[67px]" onchange="this.form.submit()">
+                        {% for option in per_page_options %}
+                            <option value="{{ option }}" {% if option == per_page %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="search" value="{{ search_query }}">
+                </form>
+                <p>Hiển thị {{ datas.start_index }} đến {{ datas.end_index }} trên {{ datas.paginator.count }}</p>
+            </div>
+            <ul class="inline-flex items-center gap-1">
+                {% if datas.has_previous %}
+                    <li class="pager">
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M13 19L7 12L13 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path opacity="0.5" d="M16.9998 19L10.9998 12L16.9998 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="pager">
+                        <a href="?page={{ pages.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M15 5L9 12L15 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                {% endif %}
+                {% for i in datas.paginator.page_range %}
+                    {% if datas.number == i %}
+                        <li class="pager">
+                            <a href="#" aria-current="page" class="flex items-center justify-center rounded bg-primary px-3.5 py-2 font-semibold text-white transition dark:bg-primary dark:text-white-light">{{ i }}</a>
+                        </li>
+                    {% elif i > datas.number|add:'-3' and i < datas.number|add:'3' %}
+                        <li class="pager">
+                            <a href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light px-3.5 py-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if datas.has_next %}
+                    <li class="pager">
+                        <a href="?page={{ datas.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li class="pager">
+                        <a href="?page={{ datas.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" class="flex items-center justify-center rounded bg-white-light p-2 font-semibold text-dark transition hover:text-primary dark:bg-[#191e3a] dark:text-white-light dark:hover:text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rtl:rotate-180">
+                                <path d="M11 19L17 12L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path opacity="0.5" d="M6.99976 19L12.9998 12L6.99976 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>
+    // function showDeleteConfirmation(button) {
+    //     const name = button.getAttribute('data-name');
+    //     const deleteUrl = button.getAttribute('data-delete-url');
+    //     confirmModal.show({
+    //         title: 'Xác nhận xóa',
+    //         content: `Bạn có chắc chắn muốn xóa "${name}" không?`,
+    //         url: deleteUrl,
+    //         confirmText: 'Xóa',
+    //         cancelText: 'Hủy',
+    //         onSuccess: (data) => {
+    //             showMessage(data.message, data.status);
+    //         },
+    //         onError: (data) => {
+    //             showMessage(data.message, data.status)
+    //         }
+    //     });
+    // }
+    // function showMessage(msg = "", type = 'success') {
+    //     const toast = window.Swal.mixin({
+    //         toast: true,
+    //         position: 'top-end',
+    //         showConfirmButton: false,
+    //         timer: 1000,
+    //         didClose: () => {
+    //             window.location.reload();
+    //         }
+    //     });
+    //     toast.fire({
+    //         icon: type,
+    //         title: msg,
+    //         padding: '2em'
+    //     });
+    // }
+
+    // function showImportModal() {
+    //     document.getElementById('importModal').classList.remove('hidden');
+    // }
+    // function hideImportModal() {
+    //     document.getElementById('importModal').classList.add('hidden');
+    //     document.getElementById('excelFileInput').value = '';
+    // }
+
+    // document.getElementById('importForm').addEventListener('submit', async function(e) {
+    //     e.preventDefault();
+    //     const formData = new FormData(this);
+
+    //     try {
+    //         const response = await fetch("{% url 'daily-ohlc-rcx-import-excel' %}", {
+    //             method: "POST",
+    //             body: formData,
+    //             headers: {
+    //                 "X-CSRFToken": "{{ csrf_token }}",
+    //             }
+    //         });
+
+    //         const result = await response.json();
+
+    //         if (result.status === "success" || result.status === "warning") {
+    //             showMessageFileExcel(result.message, result.status);
+    //             hideImportModal();
+    //             setTimeout(() => {
+    //                 location.reload();
+    //             }, 3000);
+    //         }
+    //         else {
+    //             showMessageFileExcel(result.message, result.status);
+    //             hideImportModal();
+    //         }
+    //     } catch (error) {
+    //         showMessageFileExcel("Lỗi khi upload file: " + error, "error");
+    //     }
+    // });
+    
+    function showMessageFileExcel(msg = "", type = 'success') {
+        const toast = window.Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+        });
+        toast.fire({
+            icon: type,
+            title: msg,
+            padding: '2em'
+        });
+    }
+    function showLoadingScreen() {
+        document.getElementById('loadingScreen').classList.remove('hidden');
+    }
+
+    function hideLoadingScreen() {
+        document.getElementById('loadingScreen').classList.add('hidden');
+    }
+    async function exportExcel() {
+        showLoadingScreen();
+        fetch("{% url 'export-gap-rc-data' %}", {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage(data.message, data.status);
+            if (data.status === 'success') {
+                window.open(data.result, '_blank');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            }
+            hideLoadingScreen();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Submit failed', 'error');
+            hideLoadingScreen();
+        });
+    }
+</script>
+{% endblock %}

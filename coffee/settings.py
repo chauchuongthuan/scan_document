@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "chartOHLC",
     "dailyOHLC",
     "revenue",
+    "weatherForecast",
     "scan_news",
 ]
 

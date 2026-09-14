@@ -18,7 +18,7 @@ class ChartView:
 
     @login_required(login_url="login_cms")
     def get_chart_json_kc(request):
-        symbol = request.GET.get('symbol', 'KCU2026')
+        symbol = request.GET.get('symbol', 'KCZ2026')
         
         # 1. Lấy tham số lùi ngày từ request, mặc định là 0 (phiên gần nhất)
         try:
@@ -60,7 +60,7 @@ class ChartView:
 
     @login_required(login_url="login_cms")
     def get_chart_json_rc(request):
-        symbol = request.GET.get('symbol', 'RCU2026')
+        symbol = request.GET.get('symbol', 'RCX2026')
         
         # 1. Lấy tham số lùi ngày từ request, mặc định là 0 (phiên gần nhất)
         try:

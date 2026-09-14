@@ -39,6 +39,7 @@ urlpatterns = [
     path('daily-ohlc/', include('dailyOHLC.urls')),
     path('revenue/', include('revenue.urls')),
     path('scan-news/', include('scan_news.urls')),
+    path('weather-forecast/', include('weatherForecast.urls')),
 
     # AUTH CMS
     path('cms/login/', LoginView.as_view(), name='login_cms'),

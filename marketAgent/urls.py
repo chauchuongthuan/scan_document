@@ -1,12 +1,12 @@
 from django.urls import path
 
-from .views import KCDataStockJsonToExcel, RCDataStockView, GetBrazilForecastData
+from .views import KCDataStockJsonToExcel, RCDataStockView
 from .create_prompt_views import CreatePromptView, GetCalculateMomentumView
 from .create_prompt_chunk_views import CreatePromptView2
 from .create_prompt_IG_views import InformationGeometryAnalyzerView
 from .create_prompt_header_views import CreatePromptForEachHeaderView
 from .create_prompt_HB_views import CreatePromptHBView, GetEffectiveMomentumPromptHBView
-from .tvdatafeed_views import TVGetDatafeedView, TVUnfilledGapView
+from .tvdatafeed_views import TVGetDatafeedView, TVUnfilledGapView, GapKCDataView, GapRCDataView
 
 from .icedata_api import IceDataViewSet, ExportIceDataView
 from .icedata_rc_api import ImportLocalIceRCDataView, ExportIceRCDataView
@@ -35,5 +35,10 @@ urlpatterns = [
 
     path('export-rc-stock-data', RCDataStockView.post, name='export-rc-stock-data'),
 
-    path('get-brazil-forecast', GetBrazilForecastData.post, name='get-brazil-forecast'),
+    path('gap-kc', GapKCDataView.list_gap_kc, name='gap-kc-list'),
+    path('export-gap-kc', GapKCDataView.export_excel, name='export-gap-kc-data'),
+
+    path('gap-rc', GapRCDataView.list_gap_rc, name='gap-rc-list'),
+    path('export-gap-rc', GapRCDataView.export_excel, name='export-gap-rc-data'),
+
 ]

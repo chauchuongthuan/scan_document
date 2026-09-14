@@ -13,7 +13,7 @@ REVENUE_API_URL = "http://localhost:8000/revenue/api/fetch-and-sync-revenue"
 SUMMARY_API_URL = "http://localhost:8000/revenue/api/get-sum-total-of-7-days-every-hour"
 
 # Thay token mỗi tuần
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlMDJjYjE4LTk1YTYtNGIzMi04OWM2LWI1NTc3ODVlNTZmOSIsInV0IjoiMTBkZjkwYjQtZWFhNi00YTU5LWFlMjUtOTE1YjlmOWM0MGIyIiwiZW1haWwiOiJpbmZvQGhvdGJlYW5zLmNvZmZlZSIsImNwIjoiNWIwM2M3YzUtM2JmYS00YThhLThiYjEtNjIxMDM3ODc1M2MzIiwiaWF0IjoxNzg0OTc3MTgxLCJleHAiOjE3ODU1ODE5ODF9.GHWd46LwrQ9Pyc0gJay5J3jFiZVuPYQgy0u1mNlOkGg"
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlMDJjYjE4LTk1YTYtNGIzMi04OWM2LWI1NTc3ODVlNTZmOSIsInV0IjoiNzExMDUwMGQtYzk2Zi00NjFhLWIyMjktYTk1YmZiNWRhODdhIiwiZW1haWwiOiJpbmZvQGhvdGJlYW5zLmNvZmZlZSIsImNwIjoiNWIwM2M3YzUtM2JmYS00YThhLThiYjEtNjIxMDM3ODc1M2MzIiwiaWF0IjoxNzg5MzQ5NzE0LCJleHAiOjE3ODk5NTQ1MTR9.p4ZuWjfU4UIb7DbeMJH1bBIYBCQgS-wUIc4Bv0aWwpc"
 def run_hourly_jobs():
     """
     Chạy đúng mỗi giờ: 08:00, 09:00, 10:00, ...

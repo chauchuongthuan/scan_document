@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.utils.text import slugify
 
-from .models import OHLCDataKCDaily, OHLCDataRCDaily, OHLCDataKCKDaily, OHLCDataRCKDaily, OHLCDataKCNDaily, OHLCDataRCNDaily, OHLCDataKCUDaily, OHLCDataRCUDaily, ImpliedVolatility
+from .models import OHLCDataKCDaily, OHLCDataRCDaily, OHLCDataKCKDaily, OHLCDataRCKDaily, OHLCDataKCNDaily, OHLCDataRCNDaily, OHLCDataKCUDaily, OHLCDataRCUDaily, OHLCDataKCZDaily, OHLCDataRCXDaily, ImpliedVolatility
 from django.utils import timezone
 import os
 from django.core.files.storage import default_storage
@@ -617,6 +617,14 @@ class ImpliedVolatilityView:
             data.implied_volatility_kcu = data.implied_volatility_kcu * 100 if data.implied_volatility_kcu is not None else None
             data.rv_passed_value_kcu = data.rv_passed_value_kcu * 100 if data.rv_passed_value_kcu is not None else None
             data.rv_passed_value_rcu = data.rv_passed_value_rcu * 100 if data.rv_passed_value_rcu is not None else None
+
+            data.implied_volatility_kcz = data.implied_volatility_kcz * 100 if data.implied_volatility_kcz is not None else None
+
+            data.implied_volatility_rcx = data.implied_volatility_rcx * 100 if data.implied_volatility_rcx is not None else None
+
+            data.rv_passed_value_kcz = data.rv_passed_value_kcz * 100 if data.rv_passed_value_kcz is not None else None
+
+            data.rv_passed_value_rcx = data.rv_passed_value_rcx * 100 if data.rv_passed_value_rcx is not None else None
         
         paginator = Paginator(daily_datas, per_page)
         page_number = request.GET.get('page')
@@ -644,6 +652,10 @@ class ImpliedVolatilityView:
                 implied_volatility_kcu = round(float(request.POST.get('implied_volatility_kcu')) / 100, 4) if request.POST.get('implied_volatility_kcu') else None
                 implied_volatility_rcu = round(float(request.POST.get('implied_volatility_rcu')) / 100, 4) if request.POST.get('implied_volatility_rcu') else None
 
+                implied_volatility_kcz = round(float(request.POST.get('implied_volatility_kcz')) / 100, 4) if request.POST.get('implied_volatility_kcz') else None
+
+                implied_volatility_rcx = round(float(request.POST.get('implied_volatility_rcx')) / 100, 4) if request.POST.get('implied_volatility_rcx') else None
+
                 rc_passed = False
                 kc_passed = False
 
@@ -656,6 +668,10 @@ class ImpliedVolatilityView:
                 kcu_passed = False
                 rcu_passed = False
 
+                kcz_passed = False
+
+                rcx_passed = False
+
                 rv_passed_value_rc = None
                 rv_passed_value_kc = None
 
@@ -667,6 +683,10 @@ class ImpliedVolatilityView:
                 
                 rv_passed_value_kcu = None
                 rv_passed_value_rcu = None
+
+                rv_passed_value_kcz = None
+
+                rv_passed_value_rcx = None
 
                 # Kiểm tra điều kiện cho RC (Robusta Coffee Mar)
                 if implied_volatility_rc:
@@ -793,6 +813,36 @@ class ImpliedVolatilityView:
                             rcu_passed = True
                             rv_passed_value_rcu = max(v for v in stdev_values_rcu if v is not None) - implied_volatility_rcu
 
+                # Kiểm tra điều kiện cho KCZ (Arabica Coffee Dec)
+                if implied_volatility_kcz:
+                    ohlc_kcz = OHLCDataKCZDaily.objects.filter(timestamp__date=input_date).first()
+                    if ohlc_kcz:
+                        stdev_values_kcz = [
+                            ohlc_kcz.stdev_vol_open_20_days,
+                            ohlc_kcz.stdev_vol_high_20_days,
+                            ohlc_kcz.stdev_vol_low_20_days,
+                            ohlc_kcz.stdev_vol_close_20_days
+                        ]
+                        # Nếu bất kỳ giá trị STDEV nào > implied_volatility_kc
+                        if any(v is not None and v > implied_volatility_kcz for v in stdev_values_kcz):
+                            kcz_passed = True
+                            rv_passed_value_kcz = max(v for v in stdev_values_kcz if v is not None) - implied_volatility_kcz
+
+                # Kiểm tra điều kiện cho RCX (Robusta Coffee Nov)
+                if implied_volatility_rcx:
+                    ohlc_rcx = OHLCDataRCXDaily.objects.filter(timestamp__date=input_date).first()
+                    if ohlc_rcx:
+                        # Lấy tất cả các chỉ số STDEV, lọc bỏ giá trị None
+                        stdev_values_rcx = [
+                            ohlc_rcx.stdev_vol_open_20_days,
+                            ohlc_rcx.stdev_vol_high_20_days,
+                            ohlc_rcx.stdev_vol_low_20_days,
+                            ohlc_rcx.stdev_vol_close_20_days
+                        ]
+                        # Nếu bất kỳ giá trị STDEV nào > implied_volatility_rcx
+                        if any(v is not None and v > implied_volatility_rcx for v in stdev_values_rcx):
+                            rcx_passed = True
+                            rv_passed_value_rcx = max(v for v in stdev_values_rcx if v is not None) - implied_volatility_rcx
                 iv_daily = ImpliedVolatility(
                     timestamp=input_date,
                     implied_volatility_rc=implied_volatility_rc,
@@ -807,6 +857,10 @@ class ImpliedVolatilityView:
                     implied_volatility_kcu=implied_volatility_kcu,
                     implied_volatility_rcu=implied_volatility_rcu,
 
+                    implied_volatility_kcz=implied_volatility_kcz,
+
+                    implied_volatility_rcx=implied_volatility_rcx,
+
                     realized_volatility_rc_has_passed=rc_passed,
                     realized_volatility_kc_has_passed=kc_passed,
 
@@ -818,6 +872,10 @@ class ImpliedVolatilityView:
 
                     realized_volatility_kcu_has_passed=kcu_passed,
                     realized_volatility_rcu_has_passed=rcu_passed,
+
+                    realized_volatility_kcz_has_passed=kcz_passed,
+
+                    realized_volatility_rcx_has_passed=rcx_passed,
                     
                     rv_passed_value_rc=rv_passed_value_rc,
                     rv_passed_value_kc=rv_passed_value_kc,
@@ -830,6 +888,10 @@ class ImpliedVolatilityView:
                     
                     rv_passed_value_kcu=rv_passed_value_kcu,
                     rv_passed_value_rcu=rv_passed_value_rcu,
+
+                    rv_passed_value_kcz=rv_passed_value_kcz,
+
+                    rv_passed_value_rcx=rv_passed_value_rcx,
                 )
                 iv_daily.save()
                 
@@ -979,6 +1041,8 @@ class ImpliedVolatilityView:
                     'RCN': iv_daily_data.implied_volatility_rcn * 100 if iv_daily_data.implied_volatility_rcn else "",
                     'KCU': iv_daily_data.implied_volatility_kcu * 100 if iv_daily_data.implied_volatility_kcu else "",
                     'RCU': iv_daily_data.implied_volatility_rcu * 100 if iv_daily_data.implied_volatility_rcu else "",
+                    'KCZ': iv_daily_data.implied_volatility_kcz * 100 if iv_daily_data.implied_volatility_kcz else "",
+                    'RCX': iv_daily_data.implied_volatility_rcx * 100 if iv_daily_data.implied_volatility_rcx else "",
                 })
             
             df = pd.DataFrame(data)
@@ -1002,7 +1066,7 @@ class ImpliedVolatilityView:
                 
                 # Dòng 3: Headers
                 headers = [
-                    'Date', 'KCH', 'RCH', 'KCK', 'RCK', 'KCN', 'RCN', 'KCU', 'RCU'
+                    'Date', 'KCH', 'RCH', 'KCK', 'RCK', 'KCN', 'RCN', 'KCU', 'RCU', 'KCZ', 'RCX'
                 ]
                 
                 for col, header in enumerate(headers, 1):
@@ -1060,6 +1124,10 @@ class OpenGapView:
                 last_data = OHLCDataKCUDaily.objects.order_by('-timestamp').first()
             elif symbol == 'RCU':
                 last_data = OHLCDataRCUDaily.objects.order_by('-timestamp').first()
+            elif symbol == 'KCZ':
+                last_data = OHLCDataKCZDaily.objects.order_by('-timestamp').first()
+            elif symbol == 'RCX':
+                last_data = OHLCDataRCXDaily.objects.order_by('-timestamp').first()
 
             if last_data:
                 result = float(open_index) - float(last_data.close)

@@ -195,4 +195,6 @@ def parse_and_export_cafe_data(docx_path, output_excel_path):
     print(f"Xử lý thành công! File đã lưu tại: {output_excel_path}")
 
 # --- CÁCH SỬ DỤNG HÀM ---
-parse_and_export_cafe_data("D:/Download/cafe_Kon_Tum_Mang_Den.docx", "D:/Download/output_cafe_Kon_Tum_Mang_Den.xlsx")
+# parse_and_export_cafe_data("D:/Download/LamDong_T9_2026_11.docx", "D:/Download/output_LamDong_T9_2026_11.xlsx")
+parse_and_export_cafe_data("D:/Download/KonTum_T9_2026.docx", "D:/Download/output_KonTum_T9_2026.xlsx")
+# parse_and_export_cafe_data("D:/Download/LamHaVungThap_T9_2026_2.docx", "D:/Download/output_LamHaVungThap_T9_2026_2.xlsx")

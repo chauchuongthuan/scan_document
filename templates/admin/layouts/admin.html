@@ -387,6 +387,26 @@
                     </a>
                   </li>
                   <li class="nav-item">
+                    <a href="{% url 'daily-ohlc-kcz-list' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >KCZ</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'daily-ohlc-rcx-list' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >RCX</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
                     <a href="{% url 'daily-iv-list' %}" class="group">
                       <div class="flex items-center">
                         <span
@@ -411,7 +431,7 @@
               <h2
                 class="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]"
               >
-                <span>Brazil Weather</span>
+                <span>Weather Forecast</span>
               </h2>
               <li class="nav-item">
                 <ul>
@@ -426,11 +446,11 @@
                     </a>
                   </li>
                   <li class="nav-item">
-                    <a href="{% url 'get-brazil-forecast' %}" class="group">
+                    <a href="{% url 'get-history-weather-forecast-problem' %}" class="group">
                       <div class="flex items-center">
                         <span
                           class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
-                          >Forecast</span
+                          >History</span
                         >
                       </div>
                     </a>
@@ -460,6 +480,26 @@
                         <span
                           class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
                           >Get Data Gap</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'gap-kc-list' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Gap KC list</span
+                        >
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'gap-rc-list' %}" class="group">
+                      <div class="flex items-center">
+                        <span
+                          class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark"
+                          >Gap RC list</span
                         >
                       </div>
                     </a>
@@ -597,22 +637,6 @@
                   </li>
                 </ul>
               </li>
-              <!-- <h2
-                            class="-mx-4 mb-1 flex items-center bg-white-light/30 px-7 py-3 font-extrabold uppercase dark:bg-dark dark:bg-opacity-[0.08]">
-                            <span>Search Engine</span>
-                        </h2>
-                        <li class="nav-item">
-                            <ul>
-                                <li class="nav-item">
-                                    <a href="{% url 'gg-search' %}" class="group">
-                                        <div class="flex items-center">
-                                            <span
-                                                class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Google Search</span>
-                                        </div>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li> -->
             </ul>
           </div>
         </nav>

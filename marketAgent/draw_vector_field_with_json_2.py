@@ -120,12 +120,13 @@ def process_coffee_data(json_input):
 
     # 3. Trích xuất Y Momentum
     y_momentum = [item["momentum"] for item in report]
+    # y_momentum = [0.25, 0.35, 0.2, 0.8, 0.75, 0.4, 0.65, 0.85, 0.9, -0.75, 0.7, 0.88, 0.35, -0.45, -0.6, 0.55, 0.65, 0.5, -0.3, -0.4, 0.6, 0.7, -0.3, -0.4, 0.3, -0.5, -0.2, 0.8, 0.75, 0.85, 0.5, -0.3, 0.6, 0.4, 0.8, 0.85, -0.4]
 
     print("====================================")
     print("chunk y_momentum:")
     print(y_momentum)
     print("====================================")
-    print(f"--- Đã trích xuất {len(paragraphs)} đoạn văn ---")
+    print(f"--- Đã trích xuất {len(y_momentum)} đoạn văn ---")
     print("====================================")
 
     # Gọi hàm vẽ 1
@@ -140,200 +141,93 @@ process_coffee_data(
     r"""
 {
   "semantic_layers_found": [
-    "Midstream & Local Trade",
-    "Export & FOB Dynamics",
-    "Supply & Farmer Psychology",
-    "Global Macro & Geopolitics",
-    "Agronomy & Weather",
-    "Local Logistics & Energy"
+    "Agronomy & Weather (Nông học & Thời tiết)",
+    "Supply & Farmer Psychology (Nguồn cung & Tâm lý nông dân)",
+    "Midstream & Local Trade (Thương mại nội địa)"
   ],
   "analysis_report": [
     {
       "index": 1,
-      "text": "Information as of July 27, 2026",
-      "parent_layer": "Global Macro & Geopolitics",
-      "logical_connection": "Temporal baseline anchor for market reference.",
-      "impact_sign": "neutral",
-      "momentum": 0.0
+      "text": "Yesterday night and today's morning we have heard of circulating false narratives and rumors alledging a 'widespread flash flood in Lam Dong' affecting coffee plantations areas.",
+      "parent_layer": "Supply & Farmer Psychology (Nguồn cung & Tâm lý nông dân)",
+      "logical_connection": "False panic creates temporary bullish speculative sentiment in the market.",
+      "impact_sign": "+",
+      "momentum": 0.3
     },
     {
       "index": 2,
-      "text": "HCM offers to buy at 95,000-96,000 / offers to sell at 98,000-99,000",
-      "parent_layer": "Midstream & Local Trade",
-      "logical_connection": "Local price spread reflects wide bid-ask gaps and domestic market illiquidity.",
+      "text": "Official reports from the Lam Dong Local Government Committee confirm that the impact of the 8th to 10th September weather event is strictly localised in South Gia Nghia, valley areas of Gia Nghia, and clusters around Dak R'mang of Ta Dung and not Lam Dong in general.",
+      "parent_layer": "Agronomy & Weather (Nông học & Thời tiết)",
+      "logical_connection": "Clarification of physical scope reverses false panic sentiment, introducing market stabilization.",
       "impact_sign": "-",
-      "momentum": -0.15
+      "momentum": -0.4
     },
     {
       "index": 3,
-      "text": "R2 FOB, Bulk, T11 offers to buy at +20 / offers to sell at +100",
-      "parent_layer": "Export & FOB Dynamics",
-      "logical_connection": "Wide differential spread indicates buyer-seller mismatch on forward export terms.",
+      "text": "Total economic damage province-wide stands at a minor 3 billion VND, primarily driven by small-scale road erosion.",
+      "parent_layer": "Midstream & Local Trade (Thương mại nội địa)",
+      "logical_connection": "Negligible economic loss indicates near-zero disruption to local supply chain infrastructure.",
       "impact_sign": "-",
       "momentum": -0.2
     },
     {
       "index": 4,
-      "text": "Bulgarian pepper at 135-137,000 VND/Kg",
-      "parent_layer": "Midstream & Local Trade",
-      "logical_connection": "Cross-commodity price reference highlighting high alternative crop liquidity.",
-      "impact_sign": "neutral",
-      "momentum": 0.0
-    },
-    {
-      "index": 5,
-      "text": "Müc differentials offers to buy, R2 5%, Bag FOB HCM (USD/ton)",
-      "parent_layer": "Export & FOB Dynamics",
-      "logical_connection": "Categorical baseline for physical export differential pricing.",
-      "impact_sign": "neutral",
-      "momentum": 0.0
-    },
-    {
-      "index": 6,
-      "text": "Bulk coffee price (VND/Kg): Buon Ma Thuot offers to buy at 94,000-95,000 / offers to sell at 97,000-98,000",
-      "parent_layer": "Midstream & Local Trade",
-      "logical_connection": "Origin physical market pricing showing wide bid-ask spread and price consolidation.",
-      "impact_sign": "-",
-      "momentum": -0.15
-    },
-    {
-      "index": 7,
-      "text": "Coffee prices rose on Friday, thanks to short covering and technical bottom-fishing.",
-      "parent_layer": "Global Macro & Geopolitics",
-      "logical_connection": "Short-term technical bounce providing temporary price relief.",
-      "impact_sign": "+",
-      "momentum": 0.35
-    },
-    {
-      "index": 8,
-      "text": "USDA forecasts global coffee production for the 2026/27 crop year will reach a record 189.7 million bags (+6%).",
-      "parent_layer": "Supply & Farmer Psychology",
-      "logical_connection": "Strong fundamental bearish driver from global production surge.",
-      "impact_sign": "-",
-      "momentum": -0.85
-    },
-    {
-      "index": 9,
-      "text": "Global consumption also reached a record 179.7 million bags,",
-      "parent_layer": "Global Macro & Geopolitics",
-      "logical_connection": "Demand growth partially offsetting supply surge.",
-      "impact_sign": "+",
-      "momentum": 0.3
-    },
-    {
-      "index": 10,
-      "text": "with a supply surplus of approximately 10 million bags.",
-      "parent_layer": "Supply & Farmer Psychology",
-      "logical_connection": "Heavy structural surplus placing long-term pressure on prices.",
-      "impact_sign": "-",
-      "momentum": -0.9
-    },
-    {
-      "index": 11,
-      "text": "Brazil's production is projected at 71.9 million bags (+14%).",
-      "parent_layer": "Supply & Farmer Psychology",
-      "logical_connection": "Massive supply addition from the top global producer.",
-      "impact_sign": "-",
-      "momentum": -0.85
-    },
-    {
-      "index": 12,
-      "text": "Vietnam's production is over 32.5 million bags.",
-      "parent_layer": "Supply & Farmer Psychology",
-      "logical_connection": "Stable Robusta supply anchor from key exporter.",
-      "impact_sign": "-",
-      "momentum": -0.4
-    },
-    {
-      "index": 13,
-      "text": "Global ending inventories increased to 26.3 million bags.",
-      "parent_layer": "Supply & Farmer Psychology",
-      "logical_connection": "Rebuilding buffer stock diminishes supply deficit fears.",
-      "impact_sign": "-",
-      "momentum": -0.75
-    },
-    {
-      "index": 14,
-      "text": "According to the U.S. Trade Representative (USTR), Brazilian coffee (all varieties) is exempt from the new tariff order (10% - 12.5%).",
-      "parent_layer": "Global Macro & Geopolitics",
-      "logical_connection": "Removal of tariff friction clears trade pathways for Brazilian coffee.",
-      "impact_sign": "-",
-      "momentum": -0.5
-    },
-    {
-      "index": 15,
-      "text": "This helps alleviate concerns about disruptions to coffee exports from Brazil to the U.S.",
-      "parent_layer": "Export & FOB Dynamics",
-      "logical_connection": "Smooth trade flow confirmation reduces risk premium.",
-      "impact_sign": "-",
-      "momentum": -0.4
-    },
-    {
-      "index": 16,
-      "text": "In July 2026, Brazilian exports are expected to exceed 3 million bags.",
-      "parent_layer": "Export & FOB Dynamics",
-      "logical_connection": "High physical flow flooding destination markets.",
-      "impact_sign": "-",
-      "momentum": -0.6
-    },
-    {
-      "index": 17,
-      "text": "The EU's implementation of the EUDR regulation from January 2027 may prompt trading companies to accelerate shipments between October and December 2026,",
-      "parent_layer": "Global Macro & Geopolitics",
-      "logical_connection": "Regulatory deadline inducing a near-term rush in trade volume.",
-      "impact_sign": "+",
-      "momentum": 0.45
-    },
-    {
-      "index": 18,
-      "text": "potentially leading to container shortages and increased shipping costs.",
-      "parent_layer": "Local Logistics & Energy",
-      "logical_connection": "Logistical bottlenecks create temporary bullish friction for spot availability.",
-      "impact_sign": "+",
-      "momentum": 0.55
-    },
-    {
-      "index": 19,
-      "text": "In Brazil, Robusta/Conilon is almost harvested (90%-100%).",
-      "parent_layer": "Agronomy & Weather",
-      "logical_connection": "Completion of Robusta harvest secures physical supply.",
-      "impact_sign": "-",
-      "momentum": -0.5
-    },
-    {
-      "index": 20,
-      "text": "Arabica is at about 60%-70% harvest.",
-      "parent_layer": "Agronomy & Weather",
-      "logical_connection": "Steady harvest progress maintains steady inflow into supply chains.",
+      "text": "Across all sectors, only 14.4 hectares of mixed crops (mostly short-term vegetables and fruits) experienced temporary waterlogging.",
+      "parent_layer": "Agronomy & Weather (Nông học & Thời tiết)",
+      "logical_connection": "Minimal overall agricultural impact confirms absence of widespread crop destruction.",
       "impact_sign": "-",
       "momentum": -0.3
     },
     {
-      "index": 21,
-      "text": "A cold snap brought rain to São Paulo, Sul de Minas, and Espírito Santo over the weekend, temporarily disrupting harvesting and drying.",
-      "parent_layer": "Agronomy & Weather",
-      "logical_connection": "Minor weather delays trigger localized short-term bullish reactions.",
-      "impact_sign": "+",
-      "momentum": 0.35
-    },
-    {
-      "index": 22,
-      "text": "However, there is no risk of frost (temperatures remain above 15°C).",
-      "parent_layer": "Agronomy & Weather",
-      "logical_connection": "Absence of extreme weather premium caps upside potential.",
+      "index": 5,
+      "text": "There is ZERO reported wide-scale or hectare-based damage to coffee plantations thus far.",
+      "parent_layer": "Agronomy & Weather (Nông học & Thời tiết)",
+      "logical_connection": "Direct debunking of coffee supply damage removes supply threat risk completely.",
       "impact_sign": "-",
-      "momentum": -0.6
+      "momentum": -0.8
     },
     {
-      "index": 23,
-      "text": "Sunny weather is forecast to return next week.",
-      "parent_layer": "Agronomy & Weather",
-      "logical_connection": "Quick recovery of harvest conditions reassures crop progress.",
+      "index": 6,
+      "text": "Severe water levels were restricted to low-lying residential clusters and riverbanks along the Dak Nong stream (Nam Gia Nghia ward), the lower basin of the Gia Nghia reservoir, and Dak R'mang village (Ta Dung).",
+      "parent_layer": "Agronomy & Weather (Nông học & Thời tiết)",
+      "logical_connection": "Flooding geography confirms residential/valley impact rather than agricultural elevated zones.",
+      "impact_sign": "neutral",
+      "momentum": 0.0
+    },
+    {
+      "index": 7,
+      "text": "These are valley-bottom living areas, not the slope and hillside ridges where coffee is grown in Dak Nong.",
+      "parent_layer": "Agronomy & Weather (Nông học & Thời tiết)",
+      "logical_connection": "Topographical protection isolates coffee crops from valley flooding risks.",
       "impact_sign": "-",
       "momentum": -0.5
+    },
+    {
+      "index": 8,
+      "text": "Additionally, the flooded zones are near the Moi stream are located in Suoi Kiet commune, which is a dry coastal eco-zone that produces rubber and cashew not coffee.",
+      "parent_layer": "Agronomy & Weather (Nông học & Thời tiết)",
+      "logical_connection": "Crop non-relevance eliminates any secondary supply concerns for coffee.",
+      "impact_sign": "-",
+      "momentum": -0.3
+    },
+    {
+      "index": 9,
+      "text": "Over 100,000 hectares of the region's coffee spanning from Lam Ha of Lam Dong, Dak Mil, Dam Rong, Quang Son, and Quang Tin, remain entirely secure, operational, and unaffected by the flash flood caused by rainfall.",
+      "parent_layer": "Agronomy & Weather (Nông học & Thời tiết)",
+      "logical_connection": "High-density confirmation of massive production safety solidifies strong bearish normalization of prices.",
+      "impact_sign": "-",
+      "momentum": -0.9
+    },
+    {
+      "index": 10,
+      "text": "The main affected areas are local housing within the valley trough and near river banks.",
+      "parent_layer": "Supply & Farmer Psychology (Nguồn cung & Tâm lý nông dân)",
+      "logical_connection": "Final reiteration reinforces that coffee infrastructure and supply remain fully intact.",
+      "impact_sign": "-",
+      "momentum": -0.2
     }
   ],
-  "overall_market_bias": "Strong Bearish (Driven by record global production projections, heavy 10M bag surplus, tariff exemptions for Brazil, and smooth harvest progress, despite minor logistics and short-covering bounces)"
+  "overall_market_bias": "Bearish / Neutralizing Bullish Speculation (Supply Unaffected)"
 }
     """
 )

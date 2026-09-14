@@ -54,7 +54,7 @@
             {% csrf_token %}
             <div class="flex flex-col md:flex-row gap-8">
                 <div class="w-full space-y-6">
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-4 gap-4">
                         <div>
                             <label class="mt-2" for="type">Type</label>
                             <select id="type" name="type" class="form-input">
@@ -64,11 +64,15 @@
                         </div>
                         <div>
                             <label class="mt-2" for="price_close">Price Close</label>
-                            <input id="price_close" name="price_close" type="text" class="form-input" />
+                            <input id="price_close" name="price_close" type="number" class="form-input" />
                         </div>
                         <div>
                             <label class="mt-2" for="iv">IV</label>
-                            <input id="iv" name="iv" type="text" class="form-input" />
+                            <input id="iv" name="iv" type="number" class="form-input" />
+                        </div>
+                        <div>
+                            <label class="mt-2" for="gap">Gap</label>
+                            <input id="gap" name="gap" type="number" class="form-input" />
                         </div>
                     </div>
                     <div class="grid grid-cols-1 gap-4">
@@ -154,10 +158,14 @@
 
         // Lấy dữ liệu effective_momentum và độ dài
         const momentum = result.effective_momentum || [];
+        const sign_changed_momentum = result.sign_changed_effective_momentum || [];
         const sum_abs = result.sum_abs || 0;
         const price_calculated = result.price_calculated || 0;
         const calculated_momentum = result.calculated_momentum || [];
         const momentumLength = result.effective_momentum_length ?? (Array.isArray(momentum) ? momentum.length : 0);
+        const nearest_index = result.nearest_index || 0;
+        const nearest_gap = result.nearest_gap || 0;
+        const nearest_gap_momentum = result.nearest_gap_momentum || 0;
 
         // Tạo giao diện kết quả
         tabContents.innerHTML = `
@@ -171,7 +179,13 @@
                         </svg>
                         Copy Effective Momentum
                     </button>
-
+                    <button id="btnCopySignChangedMomentum" type="button" class="btn btn-secondary flex items-center gap-2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy Sign Changed Momentum
+                    </button>
                     <button id="btnCopyCalculatedMomentum" type="button" class="btn btn-secondary flex items-center gap-2">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -186,6 +200,12 @@
                         <span class="font-bold text-gray-700">Momentum:</span>
                         <div class="p-3 bg-white border rounded font-mono text-sm break-words mt-1 max-h-48 overflow-y-auto">
                             ${JSON.stringify(momentum)}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="font-bold text-gray-700">Sign Changed Momentum:</span>
+                        <div class="p-3 bg-white border rounded font-mono text-sm break-words mt-1 max-h-48 overflow-y-auto">
+                            ${JSON.stringify(sign_changed_momentum)}
                         </div>
                     </div>
                     <div>
@@ -204,7 +224,11 @@
                     </div>
                     <div>
                         <span class="font-bold text-gray-700">Price Calculated:</span>
-                        <span class="ml-2 font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded">${price_calculated}</span>
+                        <span class="ml-2 font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded">±${price_calculated}</span>
+                    </div>
+                    <div>
+                        <span class="font-bold text-gray-700">Nearest Gap:</span>
+                        <span class="ml-2 font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded">Vị trí: ${nearest_index} - Giá trị: ${nearest_gap} - Momentum trước tính: ${nearest_gap_momentum}</span>
                     </div>
                 </div>
             </div>
@@ -215,6 +239,13 @@
             // Chuyển mảng thành chuỗi phân tách bằng tab (\t)
             // Excel nhận ký tự \t làm điểm phân chia cột tự động
             const textToCopy = Array.isArray(momentum) ? momentum.join('\t') : momentum;
+            copyToClipboard(textToCopy);
+        };
+        
+        document.getElementById('btnCopySignChangedMomentum').onclick = () => {
+            // Chuyển mảng thành chuỗi phân tách bằng tab (\t)
+            // Excel nhận ký tự \t làm điểm phân chia cột tự động
+            const textToCopy = Array.isArray(sign_changed_momentum) ? sign_changed_momentum.join('\t') : sign_changed_momentum;
             copyToClipboard(textToCopy);
         };
         

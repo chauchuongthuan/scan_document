@@ -57,7 +57,13 @@
         <table class="table-striped table-hover"> 
             <thead> 
                 <tr> 
-                    <th class="!text-center">Date</th>  
+                    <th class="!text-center">Date</th>
+
+                    <th class="!text-center" style="background-color: #25b9a5;">IV KCZ</th> 
+                    <th class="!text-center" style="background-color: #25b9a5;">IV RCX</th>
+                    <th class="!text-center" style="background-color: #25b9a5;">RV KCZ passed</th> 
+                    <th class="!text-center" style="background-color: #25b9a5;">RV RCX passed</th> 
+
                     <th class="!text-center" style="background-color: #254db9;">IV KCU</th> 
                     <th class="!text-center" style="background-color: #254db9;">IV RCU</th> 
                     <th class="!text-center" style="background-color: #254db9;">RV KCU passed</th> 
@@ -86,6 +92,22 @@
                 {% for daily_data in daily_datas %} 
                 <tr>
                     <td class="!text-center">{{ daily_data.timestamp|date:"Y-m-d" }}</td>
+
+                    <!-- KCZ and RCX -->
+                    <td class="!text-center">
+                        {{ daily_data.implied_volatility_kcz|floatformat:2 }} 
+                        {% if daily_data.implied_volatility_kcz %} % {% endif %}
+                    </td>
+                    <td class="!text-center">
+                        {{ daily_data.implied_volatility_rcx|floatformat:2 }} 
+                        {% if daily_data.implied_volatility_rcx %} % {% endif %}
+                    </td>
+                    <td class="!text-center">
+                        {{ daily_data.realized_volatility_kcz_has_passed|yesno:"Yes,No" }}
+                    </td>
+                    <td class="!text-center">
+                        {{ daily_data.realized_volatility_rcx_has_passed|yesno:"Yes,No" }}
+                    </td>
 
                     <!-- KCU and RCU -->
                     <td class="!text-center">

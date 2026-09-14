@@ -546,6 +546,8 @@ class GetCalculateMomentumView(View):
                 iv = request.POST.get('iv', 1)
                 price_close = request.POST.get('price_close', 0)
 
+                gap = request.POST.get('gap', 0)
+
                 iv_calculated = float(iv) / 100 / 20
                 price_calculated = float(price_close) * iv_calculated
 
@@ -560,20 +562,34 @@ class GetCalculateMomentumView(View):
                 
                 print("effective_momentum:::", effective_momentum)
                 print("effective_momentum length:::", len(effective_momentum))
+
+                sign_changed_effective_momentum = [float(x) * (-1) for x in effective_momentum]
+
                 paragraph_length = len(paragraphs)
                 sum_abs = sum(abs(float(x)) for x in effective_momentum)
                 print("sum_abs:::", sum_abs)
                 calculated_momentum = [float(x) / sum_abs * price_calculated for x in effective_momentum]
                 print("calculated_momentum:::", calculated_momentum)
+
+                nearest_index, nearest_gap = min(
+                    enumerate(calculated_momentum),
+                    key=lambda item: abs(abs(item[1]) - float(gap))
+                )
+
+                nearest_gap_momentum = effective_momentum[nearest_index]
                 return JsonResponse({
                     "status": "success",
                     "message": "Get calculated momentum successfully",
                     "result": {
                         "effective_momentum": effective_momentum,
+                        "sign_changed_effective_momentum": sign_changed_effective_momentum,
                         "paragraph_length": paragraph_length,
                         "sum_abs": sum_abs,
                         "price_calculated": price_calculated,
-                        "calculated_momentum": calculated_momentum
+                        "calculated_momentum": calculated_momentum,
+                        "nearest_index": nearest_index + 1,
+                        "nearest_gap": nearest_gap,
+                        "nearest_gap_momentum": nearest_gap_momentum,
                     }
                 }, status=200)
             except Exception as e:

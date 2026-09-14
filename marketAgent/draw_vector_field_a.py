@@ -3,8 +3,8 @@ import numpy as np
 from scipy.interpolate import make_interp_spline
 
 # 1. Điểm số của đoạn văn (AI phân tích) (cumulative_y)
-paragraphs = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-cumulative_scores = np.array([0.0, -0.231, -0.188, -0.198, 0.0, 0.0, 0.0, 1.332, 0.329, 0.271, -0.488, -0.2]) 
+paragraphs = np.array([1, 2, 3])
+cumulative_scores = np.array([-0.19,-0.244,-0.3]) 
 
 # 2. Tạo đường cong mượt (Interpolation)
 X_smooth = np.linspace(paragraphs.min(), paragraphs.max(), 300) 

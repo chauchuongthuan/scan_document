@@ -4,6 +4,7 @@ from .views import OHLCDataKCDailyView, OHLCDataRCDailyView, ImpliedVolatilityVi
 from .views_may import OHLCDataKCKDailyView, OHLCDataRCKDailyView
 from .views_july import OHLCDataKCNDailyView, OHLCDataRCNDailyView
 from .views_sep import OHLCDataKCUDailyView, OHLCDataRCUDailyView
+from .views_nov_dec import OHLCDataKCZDailyView, OHLCDataRCXDailyView
 urlpatterns = [
     path('kc/', OHLCDataKCDailyView.list_data_kc, name='daily-ohlc-kc-list'),
     path('kc/create/', OHLCDataKCDailyView.create_data_kc, name='daily-ohlc-kc-create'),
@@ -52,6 +53,18 @@ urlpatterns = [
     path('rcu/import-excel/', OHLCDataRCUDailyView.import_excel_rcu, name='daily-ohlc-rcu-import-excel'),
     path('rcu/export-excel/', OHLCDataRCUDailyView.export_excel, name='daily-ohlc-rcu-export-excel'),
     path('<pk>/rcu/delete/', OHLCDataRCUDailyView.delete_data_rcu, name='daily-ohlc-rcu-delete'),
+
+    path('kcz/', OHLCDataKCZDailyView.list_data_kcz, name='daily-ohlc-kcz-list'),
+    path('kcz/create/', OHLCDataKCZDailyView.create_data_kcz, name='daily-ohlc-kcz-create'),
+    path('kcz/import-excel/', OHLCDataKCZDailyView.import_excel_kcz, name='daily-ohlc-kcz-import-excel'),
+    path('kcz/export-excel/', OHLCDataKCZDailyView.export_excel, name='daily-ohlc-kcz-export-excel'),
+    path('<pk>/kcz/delete/', OHLCDataKCZDailyView.delete_data_kcz, name='daily-ohlc-kcz-delete'),
+
+    path('rcx/', OHLCDataRCXDailyView.list_data_rcx, name='daily-ohlc-rcx-list'),
+    path('rcx/create/', OHLCDataRCXDailyView.create_data_rcx, name='daily-ohlc-rcx-create'),
+    path('rcx/import-excel/', OHLCDataRCXDailyView.import_excel_rcx, name='daily-ohlc-rcx-import-excel'),
+    path('rcx/export-excel/', OHLCDataRCXDailyView.export_excel, name='daily-ohlc-rcx-export-excel'),
+    path('<pk>/rcx/delete/', OHLCDataRCXDailyView.delete_data_rcx, name='daily-ohlc-rcx-delete'),
 
     path('iv/', ImpliedVolatilityView.list_data_iv, name='daily-iv-list'),
     path('iv/create/', ImpliedVolatilityView.create_data_iv, name='daily-iv-create'),
